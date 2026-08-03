@@ -1,0 +1,19 @@
+services:
+  sqlserver:
+    # same image for everyone - mac (via docker) and windows teammates alike
+    # this is the whole point: nobody installs sql server natively, no version drift
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: rihla-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      # dev-only password, fine to commit since it's local containers only
+      # note: no $ in it on purpose - remember the shell quoting pain from before
+      - MSSQL_SA_PASSWORD=Rihla2026Strong!
+    ports:
+      - "1433:1433"
+    volumes:
+      # keeps the db data alive between container restarts
+      - rihla-sqldata:/var/opt/mssql
+
+volumes:
+  rihla-sqldata:
