@@ -1,0 +1,967 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2337pt" height="1050pt" viewBox="0.00 0.00 2337.00 1050.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1045.61)">
+<title>Airline_ERD_Chen</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-1045.61 2333,-1045.61 2333,4 -4,4"/>
+<!-- User -->
+<g id="node1" class="node">
+<title>User</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1960,-1041.61 1906,-1041.61 1906,-1005.61 1960,-1005.61 1960,-1041.61"/>
+<text xml:space="preserve" text-anchor="middle" x="1933" y="-1020.61" font-family="Helvetica,sans-Serif" font-size="10.00">User</text>
+</g>
+<!-- Makes -->
+<g id="node13" class="node">
+<title>Makes</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1568,-950.81 1529.35,-932.81 1568,-914.81 1606.65,-932.81 1568,-950.81"/>
+<text xml:space="preserve" text-anchor="middle" x="1568" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">Makes</text>
+</g>
+<!-- User&#45;&#45;Makes -->
+<g id="edge62" class="edge">
+<title>User--Makes</title>
+<path fill="none" stroke="black" d="M1905.27,-1015.86C1836.39,-999.11 1658.39,-955.8 1592.77,-939.83"/>
+<text xml:space="preserve" text-anchor="middle" x="1774.86" y="-975.51" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Has -->
+<g id="node14" class="node">
+<title>Has</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1724,-950.81 1695.27,-932.81 1724,-914.81 1752.73,-932.81 1724,-950.81"/>
+<text xml:space="preserve" text-anchor="middle" x="1724" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">Has</text>
+</g>
+<!-- User&#45;&#45;Has -->
+<g id="edge64" class="edge">
+<title>User--Has</title>
+<path fill="none" stroke="black" d="M1905.68,-1011C1861.86,-992.38 1777.14,-956.39 1741,-941.03"/>
+<text xml:space="preserve" text-anchor="middle" x="1843.52" y="-975.51" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- User_Id -->
+<g id="node25" class="node">
+<title>User_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1809" cy="-932.81" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1804.83" y="-930.81" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- User&#45;&#45;User_Id -->
+<g id="edge1" class="edge">
+<title>User--User_Id</title>
+<path fill="none" stroke="black" d="M1908.5,-1005.06C1884.5,-987.88 1848.5,-962.1 1827.02,-946.71"/>
+</g>
+<!-- User_Name -->
+<g id="node26" class="node">
+<title>User_Name</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1892" cy="-932.81" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1892" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">Name</text>
+</g>
+<!-- User&#45;&#45;User_Name -->
+<g id="edge2" class="edge">
+<title>User--User_Name</title>
+<path fill="none" stroke="black" d="M1924.9,-1005.06C1917.57,-989.19 1906.86,-965.99 1899.67,-950.42"/>
+</g>
+<!-- User_Email -->
+<g id="node27" class="node">
+<title>User_Email</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1975" cy="-932.81" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1975" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">Email</text>
+</g>
+<!-- User&#45;&#45;User_Email -->
+<g id="edge3" class="edge">
+<title>User--User_Email</title>
+<path fill="none" stroke="black" d="M1941.3,-1005.06C1948.8,-989.19 1959.78,-965.99 1967.15,-950.42"/>
+</g>
+<!-- User_Password -->
+<g id="node28" class="node">
+<title>User_Password</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2081" cy="-932.81" rx="50.06" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2081" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">PasswordHash</text>
+</g>
+<!-- User&#45;&#45;User_Password -->
+<g id="edge4" class="edge">
+<title>User--User_Password</title>
+<path fill="none" stroke="black" d="M1960.49,-1006.11C1987.91,-989.66 2029.66,-964.62 2056.12,-948.74"/>
+</g>
+<!-- User_Role -->
+<g id="node29" class="node">
+<title>User_Role</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2187" cy="-932.81" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2187" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">Role</text>
+</g>
+<!-- User&#45;&#45;User_Role -->
+<g id="edge5" class="edge">
+<title>User--User_Role</title>
+<path fill="none" stroke="black" d="M1960.44,-1014.02C2001.21,-1001.1 2080.06,-975.56 2146,-950.81 2152.06,-948.53 2158.56,-945.92 2164.55,-943.44"/>
+</g>
+<!-- User_CreatedAt -->
+<g id="node30" class="node">
+<title>User_CreatedAt</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2280" cy="-932.81" rx="36.7" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2280" y="-929.81" font-family="Helvetica,sans-Serif" font-size="10.00">CreatedAt</text>
+</g>
+<!-- User&#45;&#45;User_CreatedAt -->
+<g id="edge6" class="edge">
+<title>User--User_CreatedAt</title>
+<path fill="none" stroke="black" d="M1960.54,-1016.74C2013.1,-1005.36 2131.17,-978.93 2229,-950.81 2236.09,-948.77 2243.66,-946.37 2250.74,-944.03"/>
+</g>
+<!-- PassengerProfile -->
+<g id="node2" class="node">
+<title>PassengerProfile</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1882.08,-860.01 1789.92,-860.01 1789.92,-824.01 1882.08,-824.01 1882.08,-860.01"/>
+<text xml:space="preserve" text-anchor="middle" x="1836" y="-839.01" font-family="Helvetica,sans-Serif" font-size="10.00">PassengerProfile</text>
+</g>
+<!-- Prof_Id -->
+<g id="node31" class="node">
+<title>Prof_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2124" cy="-751.21" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="2119.83" y="-749.21" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_Id -->
+<g id="edge7" class="edge">
+<title>PassengerProfile--Prof_Id</title>
+<path fill="none" stroke="black" d="M1882.46,-829.14C1932.47,-815.99 2014.12,-793.42 2083,-769.21 2089.25,-767.01 2095.93,-764.37 2102.04,-761.84"/>
+</g>
+<!-- Prof_Passport -->
+<g id="node32" class="node">
+<title>Prof_Passport</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1589" cy="-751.21" rx="54.74" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1589" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">PassportNumber</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_Passport -->
+<g id="edge8" class="edge">
+<title>PassengerProfile--Prof_Passport</title>
+<path fill="none" stroke="black" d="M1789.25,-824.2C1741.56,-807.06 1668.57,-780.81 1625.13,-765.2"/>
+</g>
+<!-- Prof_Phone -->
+<g id="node33" class="node">
+<title>Prof_Phone</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1721" cy="-751.21" rx="48.4" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1721" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">PhoneNumber</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_Phone -->
+<g id="edge9" class="edge">
+<title>PassengerProfile--Prof_Phone</title>
+<path fill="none" stroke="black" d="M1813.28,-823.46C1792.33,-807.29 1761.52,-783.5 1741.36,-767.93"/>
+</g>
+<!-- Prof_Nat -->
+<g id="node34" class="node">
+<title>Prof_Nat</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1836" cy="-751.21" rx="37.7" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1836" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">Nationality</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_Nat -->
+<g id="edge10" class="edge">
+<title>PassengerProfile--Prof_Nat</title>
+<path fill="none" stroke="black" d="M1836,-823.46C1836,-807.8 1836,-784.98 1836,-769.41"/>
+</g>
+<!-- Prof_DOB -->
+<g id="node35" class="node">
+<title>Prof_DOB</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1944" cy="-751.21" rx="41.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1944" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">DateOfBirth</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_DOB -->
+<g id="edge11" class="edge">
+<title>PassengerProfile--Prof_DOB</title>
+<path fill="none" stroke="black" d="M1857.34,-823.46C1877.13,-807.19 1906.31,-783.2 1925.23,-767.64"/>
+</g>
+<!-- Prof_Age -->
+<g id="node36" class="node">
+<title>Prof_Age</title>
+<ellipse fill="#ffffff" stroke="#37474f" stroke-dasharray="5,2" cx="2041" cy="-751.21" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2041" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">Age</text>
+</g>
+<!-- PassengerProfile&#45;&#45;Prof_Age -->
+<g id="edge12" class="edge">
+<title>PassengerProfile--Prof_Age</title>
+<path fill="none" stroke="black" d="M1876.5,-823.46C1919.09,-805.02 1984.56,-776.66 2018.64,-761.9"/>
+</g>
+<!-- Booking -->
+<g id="node3" class="node">
+<title>Booking</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1235,-860.01 1181,-860.01 1181,-824.01 1235,-824.01 1235,-860.01"/>
+<text xml:space="preserve" text-anchor="middle" x="1208" y="-839.01" font-family="Helvetica,sans-Serif" font-size="10.00">Booking</text>
+</g>
+<!-- Paid_By -->
+<g id="node15" class="node">
+<title>Paid_By</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="933,-769.21 887.72,-751.21 933,-733.21 978.28,-751.21 933,-769.21"/>
+<text xml:space="preserve" text-anchor="middle" x="933" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">Paid_By</text>
+</g>
+<!-- Booking&#45;&#45;Paid_By -->
+<g id="edge66" class="edge">
+<title>Booking--Paid_By</title>
+<path fill="none" stroke="black" d="M1180.37,-832.09C1126.57,-814.72 1008.55,-776.6 957.42,-760.09"/>
+<text xml:space="preserve" text-anchor="middle" x="1089.47" y="-793.91" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Contains -->
+<g id="node16" class="node">
+<title>Contains</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1054,-769.21 1006.83,-751.21 1054,-733.21 1101.17,-751.21 1054,-769.21"/>
+<text xml:space="preserve" text-anchor="middle" x="1054" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">Contains</text>
+</g>
+<!-- Booking&#45;&#45;Contains -->
+<g id="edge68" class="edge">
+<title>Booking--Contains</title>
+<path fill="none" stroke="black" d="M1180.47,-825.13C1149.15,-807.07 1098.9,-778.1 1072.14,-762.67"/>
+<text xml:space="preserve" text-anchor="middle" x="1142.72" y="-793.91" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Book_Id -->
+<g id="node37" class="node">
+<title>Book_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1157" cy="-751.21" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1152.83" y="-749.21" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Booking&#45;&#45;Book_Id -->
+<g id="edge13" class="edge">
+<title>Booking--Book_Id</title>
+<path fill="none" stroke="black" d="M1197.92,-823.46C1188.75,-807.49 1175.31,-784.09 1166.37,-768.52"/>
+</g>
+<!-- Book_Code -->
+<g id="node38" class="node">
+<title>Book_Code</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1259" cy="-751.21" rx="45.73" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1259" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">BookingCode</text>
+</g>
+<!-- Booking&#45;&#45;Book_Code -->
+<g id="edge14" class="edge">
+<title>Booking--Book_Code</title>
+<path fill="none" stroke="black" d="M1218.08,-823.46C1227.13,-807.69 1240.35,-784.68 1249.29,-769.11"/>
+</g>
+<!-- Book_Status -->
+<g id="node39" class="node">
+<title>Book_Status</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1361" cy="-751.21" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1361" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">Status</text>
+</g>
+<!-- Booking&#45;&#45;Book_Status -->
+<g id="edge15" class="edge">
+<title>Booking--Book_Status</title>
+<path fill="none" stroke="black" d="M1235.71,-824.93C1266.19,-807.23 1314.42,-779.25 1341.28,-763.66"/>
+</g>
+<!-- Book_Date -->
+<g id="node40" class="node">
+<title>Book_Date</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1461" cy="-751.21" rx="44.05" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1461" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">BookingDate</text>
+</g>
+<!-- Booking&#45;&#45;Book_Date -->
+<g id="edge16" class="edge">
+<title>Booking--Book_Date</title>
+<path fill="none" stroke="black" d="M1235.56,-831.34C1282.56,-814.84 1378.01,-781.34 1428.31,-763.68"/>
+</g>
+<!-- Book_Total -->
+<g id="node41" class="node">
+<title>Book_Total</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="815" cy="-751.21" rx="43.71" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="815" y="-748.21" font-family="Helvetica,sans-Serif" font-size="10.00">TotalAmount</text>
+</g>
+<!-- Booking&#45;&#45;Book_Total -->
+<g id="edge17" class="edge">
+<title>Booking--Book_Total</title>
+<path fill="none" stroke="black" d="M1180.48,-835.83C1123.04,-824.85 986.3,-797.91 873,-769.21 865.27,-767.25 857.02,-764.96 849.23,-762.7"/>
+</g>
+<!-- Payment -->
+<g id="node4" class="node">
+<title>Payment</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="268.73,-678.41 213.27,-678.41 213.27,-642.41 268.73,-642.41 268.73,-678.41"/>
+<text xml:space="preserve" text-anchor="middle" x="241" y="-657.41" font-family="Helvetica,sans-Serif" font-size="10.00">Payment</text>
+</g>
+<!-- Pay_Id -->
+<g id="node42" class="node">
+<title>Pay_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="110" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="105.83" y="-563.3" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Payment&#45;&#45;Pay_Id -->
+<g id="edge18" class="edge">
+<title>Payment--Pay_Id</title>
+<path fill="none" stroke="black" d="M216.05,-641.68C190.37,-623.42 150.96,-595.42 128.12,-579.18"/>
+</g>
+<!-- Pay_Amount -->
+<g id="node43" class="node">
+<title>Pay_Amount</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="196" cy="-565.3" rx="30.35" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="196" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Amount</text>
+</g>
+<!-- Payment&#45;&#45;Pay_Amount -->
+<g id="edge19" class="edge">
+<title>Payment--Pay_Amount</title>
+<path fill="none" stroke="black" d="M232.54,-641.9C224.39,-625.04 212.15,-599.73 204.12,-583.11"/>
+</g>
+<!-- Pay_Method -->
+<g id="node44" class="node">
+<title>Pay_Method</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="285" cy="-565.3" rx="29.68" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="285" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Method</text>
+</g>
+<!-- Payment&#45;&#45;Pay_Method -->
+<g id="edge20" class="edge">
+<title>Payment--Pay_Method</title>
+<path fill="none" stroke="black" d="M249.28,-641.9C257.24,-625.04 269.21,-599.73 277.06,-583.11"/>
+</g>
+<!-- Pay_Date -->
+<g id="node45" class="node">
+<title>Pay_Date</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="390" cy="-565.3" rx="46.05" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="390" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">PaymentDate</text>
+</g>
+<!-- Payment&#45;&#45;Pay_Date -->
+<g id="edge21" class="edge">
+<title>Payment--Pay_Date</title>
+<path fill="none" stroke="black" d="M269.38,-641.68C297.58,-624.06 340.32,-597.35 366.63,-580.91"/>
+</g>
+<!-- Pay_Status -->
+<g id="node46" class="node">
+<title>Pay_Status</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="27" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Status</text>
+</g>
+<!-- Payment&#45;&#45;Pay_Status -->
+<g id="edge22" class="edge">
+<title>Payment--Pay_Status</title>
+<path fill="none" stroke="black" d="M212.81,-648.57C178.3,-635.11 118.25,-611.04 68,-587.61 61.31,-584.49 54.14,-580.86 47.69,-577.49"/>
+</g>
+<!-- Ticket -->
+<g id="node5" class="node">
+<title>Ticket</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1524,-678.41 1470,-678.41 1470,-642.41 1524,-642.41 1524,-678.41"/>
+<text xml:space="preserve" text-anchor="middle" x="1497" y="-657.41" font-family="Helvetica,sans-Serif" font-size="10.00">Ticket</text>
+</g>
+<!-- Issued_For -->
+<g id="node17" class="node">
+<title>Issued_For</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1747,-583.3 1690.85,-565.3 1747,-547.3 1803.15,-565.3 1747,-583.3"/>
+<text xml:space="preserve" text-anchor="middle" x="1747" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Issued_For</text>
+</g>
+<!-- Ticket&#45;&#45;Issued_For -->
+<g id="edge70" class="edge">
+<title>Ticket--Issued_For</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1524.71,-649.09C1573.53,-630.91 1674.16,-593.43 1721.42,-575.83"/>
+<text xml:space="preserve" text-anchor="middle" x="1633.24" y="-612.31" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Belongs_To -->
+<g id="node18" class="node">
+<title>Belongs_To</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1891,-583.3 1832.01,-565.3 1891,-547.3 1949.99,-565.3 1891,-583.3"/>
+<text xml:space="preserve" text-anchor="middle" x="1891" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Belongs_To</text>
+</g>
+<!-- Ticket&#45;&#45;Belongs_To -->
+<g id="edge72" class="edge">
+<title>Ticket--Belongs_To</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1524.62,-653.85C1580.36,-642.5 1710.16,-615.38 1818,-587.61 1832.58,-583.86 1848.65,-579.22 1861.99,-575.23"/>
+<text xml:space="preserve" text-anchor="middle" x="1725.13" y="-612.31" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Includes -->
+<g id="node24" class="node">
+<title>Includes</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="2052,-583.3 2006.72,-565.3 2052,-547.3 2097.28,-565.3 2052,-583.3"/>
+<polygon fill="none" stroke="#e65100" stroke-width="1.5" points="2052,-587.61 1995.89,-565.3 2052,-543 2108.11,-565.3 2052,-587.61"/>
+<text xml:space="preserve" text-anchor="middle" x="2052" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Includes</text>
+</g>
+<!-- Ticket&#45;&#45;Includes -->
+<g id="edge74" class="edge">
+<title>Ticket--Includes</title>
+<path fill="none" stroke="black" d="M1524.51,-656.01C1596.85,-646.89 1798.22,-620.36 1964,-587.61 1982.2,-584.01 2002.32,-579.21 2018.72,-575.07"/>
+<text xml:space="preserve" text-anchor="middle" x="1838.83" y="-612.31" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Tkt_Id -->
+<g id="node47" class="node">
+<title>Tkt_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1176" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1171.83" y="-563.3" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Ticket&#45;&#45;Tkt_Id -->
+<g id="edge23" class="edge">
+<title>Ticket--Tkt_Id</title>
+<path fill="none" stroke="black" d="M1469.33,-654.49C1418.33,-644.96 1306.53,-621.83 1217,-587.61 1209.96,-584.92 1202.56,-581.33 1196.01,-577.87"/>
+</g>
+<!-- Tkt_Num -->
+<g id="node48" class="node">
+<title>Tkt_Num</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1279" cy="-565.3" rx="47.05" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1279" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">TicketNumber</text>
+</g>
+<!-- Ticket&#45;&#45;Tkt_Num -->
+<g id="edge24" class="edge">
+<title>Ticket--Tkt_Num</title>
+<path fill="none" stroke="black" d="M1469.39,-647.62C1428.49,-630.15 1352.06,-597.51 1309.54,-579.35"/>
+</g>
+<!-- Tkt_Seat -->
+<g id="node49" class="node">
+<title>Tkt_Seat</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1398" cy="-565.3" rx="43.38" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1398" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">SeatNumber</text>
+</g>
+<!-- Ticket&#45;&#45;Tkt_Seat -->
+<g id="edge25" class="edge">
+<title>Ticket--Tkt_Seat</title>
+<path fill="none" stroke="black" d="M1478.38,-641.9C1460.12,-624.72 1432.53,-598.77 1414.89,-582.19"/>
+</g>
+<!-- Tkt_Price -->
+<g id="node50" class="node">
+<title>Tkt_Price</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1497" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1497" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Price</text>
+</g>
+<!-- Ticket&#45;&#45;Tkt_Price -->
+<g id="edge26" class="edge">
+<title>Ticket--Tkt_Price</title>
+<path fill="none" stroke="black" d="M1497,-641.9C1497,-625.25 1497,-600.36 1497,-583.74"/>
+</g>
+<!-- Tkt_Passenger -->
+<g id="node51" class="node">
+<title>Tkt_Passenger</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1607" cy="-565.3" rx="54.41" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1607" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">PassengerName</text>
+</g>
+<!-- Ticket&#45;&#45;Tkt_Passenger -->
+<g id="edge27" class="edge">
+<title>Ticket--Tkt_Passenger</title>
+<path fill="none" stroke="black" d="M1517.95,-641.68C1538.15,-624.58 1568.44,-598.94 1587.97,-582.41"/>
+</g>
+<!-- SeatClass -->
+<g id="node6" class="node">
+<title>SeatClass</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1803.79,-484.2 1742.21,-484.2 1742.21,-448.2 1803.79,-448.2 1803.79,-484.2"/>
+<text xml:space="preserve" text-anchor="middle" x="1773" y="-463.2" font-family="Helvetica,sans-Serif" font-size="10.00">SeatClass</text>
+</g>
+<!-- SC_Id -->
+<g id="node52" class="node">
+<title>SC_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1690" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1685.83" y="-369.4" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- SeatClass&#45;&#45;SC_Id -->
+<g id="edge28" class="edge">
+<title>SeatClass--SC_Id</title>
+<path fill="none" stroke="black" d="M1757.39,-447.75C1741.8,-430.31 1718.09,-403.81 1703.35,-387.33"/>
+</g>
+<!-- SC_Name -->
+<g id="node53" class="node">
+<title>SC_Name</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1773" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1773" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Name</text>
+</g>
+<!-- SeatClass&#45;&#45;SC_Name -->
+<g id="edge29" class="edge">
+<title>SeatClass--SC_Name</title>
+<path fill="none" stroke="black" d="M1773,-447.75C1773,-431.15 1773,-406.34 1773,-389.78"/>
+</g>
+<!-- SC_Multiplier -->
+<g id="node54" class="node">
+<title>SC_Multiplier</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1876" cy="-371.4" rx="47.38" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1876" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">PriceMultiplier</text>
+</g>
+<!-- SeatClass&#45;&#45;SC_Multiplier -->
+<g id="edge30" class="edge">
+<title>SeatClass--SC_Multiplier</title>
+<path fill="none" stroke="black" d="M1792.37,-447.75C1811.25,-430.73 1839.73,-405.08 1858.09,-388.53"/>
+</g>
+<!-- SC_Baggage -->
+<g id="node55" class="node">
+<title>SC_Baggage</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1566" cy="-371.4" rx="68.46" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1566" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">BaggageAllowanceKg</text>
+</g>
+<!-- SeatClass&#45;&#45;SC_Baggage -->
+<g id="edge31" class="edge">
+<title>SeatClass--SC_Baggage</title>
+<path fill="none" stroke="black" d="M1741.56,-451.11C1703.22,-433.92 1638.69,-404.99 1599.45,-387.4"/>
+</g>
+<!-- Flight -->
+<g id="node7" class="node">
+<title>Flight</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="987,-484.2 933,-484.2 933,-448.2 987,-448.2 987,-484.2"/>
+<text xml:space="preserve" text-anchor="middle" x="960" y="-463.2" font-family="Helvetica,sans-Serif" font-size="10.00">Flight</text>
+</g>
+<!-- Follows -->
+<g id="node20" class="node">
+<title>Follows</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1296,-389.4 1253.57,-371.4 1296,-353.4 1338.43,-371.4 1296,-389.4"/>
+<text xml:space="preserve" text-anchor="middle" x="1296" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Follows</text>
+</g>
+<!-- Flight&#45;&#45;Follows -->
+<g id="edge78" class="edge">
+<title>Flight--Follows</title>
+<path fill="none" stroke="black" stroke-width="3" d="M987.5,-458.05C1037.76,-444.92 1147.79,-415.87 1240,-389.4 1250.45,-386.4 1261.95,-382.94 1271.79,-379.92"/>
+<text xml:space="preserve" text-anchor="middle" x="1159.3" y="-414.1" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Assigned_To -->
+<g id="node23" class="node">
+<title>Assigned_To</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="637,-389.4 573.75,-371.4 637,-353.4 700.25,-371.4 637,-389.4"/>
+<text xml:space="preserve" text-anchor="middle" x="637" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Assigned_To</text>
+</g>
+<!-- Flight&#45;&#45;Assigned_To -->
+<g id="edge84" class="edge">
+<title>Flight--Assigned_To</title>
+<path fill="none" stroke="black" d="M932.46,-457.29C872.51,-440.06 730.51,-399.27 667.75,-381.23"/>
+<text xml:space="preserve" text-anchor="middle" x="811.93" y="-414.1" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Flt_Id -->
+<g id="node60" class="node">
+<title>Flt_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="756" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="751.83" y="-369.4" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Flight&#45;&#45;Flt_Id -->
+<g id="edge36" class="edge">
+<title>Flight--Flt_Id</title>
+<path fill="none" stroke="black" d="M932.49,-452.68C891.49,-434.03 815.18,-399.32 777.79,-382.31"/>
+</g>
+<!-- Flt_Num -->
+<g id="node61" class="node">
+<title>Flt_Num</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="858" cy="-371.4" rx="45.71" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="858" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">FlightNumber</text>
+</g>
+<!-- Flight&#45;&#45;Flt_Num -->
+<g id="edge37" class="edge">
+<title>Flight--Flt_Num</title>
+<path fill="none" stroke="black" d="M940.81,-447.75C922,-430.63 893.57,-404.76 875.4,-388.23"/>
+</g>
+<!-- Flt_Status -->
+<g id="node62" class="node">
+<title>Flt_Status</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="960" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="960" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Status</text>
+</g>
+<!-- Flight&#45;&#45;Flt_Status -->
+<g id="edge38" class="edge">
+<title>Flight--Flt_Status</title>
+<path fill="none" stroke="black" d="M960,-447.75C960,-431.15 960,-406.34 960,-389.78"/>
+</g>
+<!-- Flt_DepTime -->
+<g id="node63" class="node">
+<title>Flt_DepTime</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1066" cy="-371.4" rx="49.72" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1066" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">DepartureTime</text>
+</g>
+<!-- Flight&#45;&#45;Flt_DepTime -->
+<g id="edge39" class="edge">
+<title>Flight--Flt_DepTime</title>
+<path fill="none" stroke="black" d="M979.94,-447.75C999.37,-430.73 1028.67,-405.08 1047.57,-388.53"/>
+</g>
+<!-- Flt_ArrTime -->
+<g id="node64" class="node">
+<title>Flt_ArrTime</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1185" cy="-371.4" rx="40.02" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1185" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">ArrivalTime</text>
+</g>
+<!-- Flight&#45;&#45;Flt_ArrTime -->
+<g id="edge40" class="edge">
+<title>Flight--Flt_ArrTime</title>
+<path fill="none" stroke="black" d="M987.59,-453.82C1030.42,-436.16 1112.51,-402.3 1156.12,-384.31"/>
+</g>
+<!-- Airplane -->
+<g id="node8" class="node">
+<title>Airplane</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="824,-678.41 770,-678.41 770,-642.41 824,-642.41 824,-678.41"/>
+<text xml:space="preserve" text-anchor="middle" x="797" y="-657.41" font-family="Helvetica,sans-Serif" font-size="10.00">Airplane</text>
+</g>
+<!-- Operates -->
+<g id="node19" class="node">
+<title>Operates</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="514,-583.3 465.41,-565.3 514,-547.3 562.59,-565.3 514,-583.3"/>
+<text xml:space="preserve" text-anchor="middle" x="514" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Operates</text>
+</g>
+<!-- Airplane&#45;&#45;Operates -->
+<g id="edge76" class="edge">
+<title>Airplane--Operates</title>
+<path fill="none" stroke="black" d="M769.53,-650.55C727.86,-637.08 646.2,-610.6 577,-587.61 564.4,-583.42 550.41,-578.7 538.81,-574.76"/>
+<text xml:space="preserve" text-anchor="middle" x="676" y="-612.31" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Air_Id -->
+<g id="node65" class="node">
+<title>Air_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="619" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="614.83" y="-563.3" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Airplane&#45;&#45;Air_Id -->
+<g id="edge41" class="edge">
+<title>Airplane--Air_Id</title>
+<path fill="none" stroke="black" d="M769.58,-645.07C733.79,-626.35 671.94,-593.99 639.78,-577.17"/>
+</g>
+<!-- Air_Reg -->
+<g id="node66" class="node">
+<title>Air_Reg</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="738" cy="-565.3" rx="63.1" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="738" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">RegistrationNumber</text>
+</g>
+<!-- Airplane&#45;&#45;Air_Reg -->
+<g id="edge42" class="edge">
+<title>Airplane--Air_Reg</title>
+<path fill="none" stroke="black" d="M785.9,-641.9C775.29,-625.15 759.38,-600.04 748.85,-583.42"/>
+</g>
+<!-- Air_Model -->
+<g id="node67" class="node">
+<title>Air_Model</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="857" cy="-565.3" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="857" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Model</text>
+</g>
+<!-- Airplane&#45;&#45;Air_Model -->
+<g id="edge43" class="edge">
+<title>Airplane--Air_Model</title>
+<path fill="none" stroke="black" d="M808.29,-641.9C819.35,-624.72 836.08,-598.77 846.77,-582.19"/>
+</g>
+<!-- Air_Year -->
+<g id="node68" class="node">
+<title>Air_Year</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="969" cy="-565.3" rx="55.75" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="969" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">ManufactureYear</text>
+</g>
+<!-- Airplane&#45;&#45;Air_Year -->
+<g id="edge44" class="edge">
+<title>Airplane--Air_Year</title>
+<path fill="none" stroke="black" d="M824.63,-644.45C856.73,-627.08 909.37,-598.58 941.43,-581.23"/>
+</g>
+<!-- Air_Cap -->
+<g id="node69" class="node">
+<title>Air_Cap</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1087" cy="-565.3" rx="33.02" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1087" y="-562.3" font-family="Helvetica,sans-Serif" font-size="10.00">Capacity</text>
+</g>
+<!-- Airplane&#45;&#45;Air_Cap -->
+<g id="edge45" class="edge">
+<title>Airplane--Air_Cap</title>
+<path fill="none" stroke="black" d="M824.6,-652.47C869.92,-640.79 962.72,-615.72 1039,-587.61 1046.87,-584.71 1055.28,-581.14 1062.83,-577.76"/>
+</g>
+<!-- Route -->
+<g id="node9" class="node">
+<title>Route</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1323,-298.6 1269,-298.6 1269,-262.6 1323,-262.6 1323,-298.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1296" y="-277.6" font-family="Helvetica,sans-Serif" font-size="10.00">Route</text>
+</g>
+<!-- Departs_From -->
+<g id="node21" class="node">
+<title>Departs_From</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1462,-207.8 1394.05,-189.8 1462,-171.8 1529.95,-189.8 1462,-207.8"/>
+<text xml:space="preserve" text-anchor="middle" x="1462" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">Departs_From</text>
+</g>
+<!-- Route&#45;&#45;Departs_From -->
+<g id="edge80" class="edge">
+<title>Route--Departs_From</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1323.41,-264.94C1356.01,-247.5 1409.78,-218.73 1439.87,-202.64"/>
+<text xml:space="preserve" text-anchor="middle" x="1392.69" y="-232.5" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Arrives_At -->
+<g id="node22" class="node">
+<title>Arrives_At</title>
+<polygon fill="#ffe0b2" stroke="#e65100" stroke-width="1.5" points="1612,-207.8 1559.17,-189.8 1612,-171.8 1664.83,-189.8 1612,-207.8"/>
+<text xml:space="preserve" text-anchor="middle" x="1612" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">Arrives_At</text>
+</g>
+<!-- Route&#45;&#45;Arrives_At -->
+<g id="edge82" class="edge">
+<title>Route--Arrives_At</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1323.49,-271.87C1382.95,-255.17 1523.02,-215.8 1583.44,-198.83"/>
+<text xml:space="preserve" text-anchor="middle" x="1476.67" y="-232.5" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Rt_Id -->
+<g id="node70" class="node">
+<title>Rt_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1058" cy="-189.8" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1053.83" y="-187.8" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Route&#45;&#45;Rt_Id -->
+<g id="edge46" class="edge">
+<title>Route--Rt_Id</title>
+<path fill="none" stroke="black" d="M1268.45,-269.99C1230.23,-256.55 1159.04,-231.18 1099,-207.8 1092.97,-205.45 1086.48,-202.81 1080.49,-200.33"/>
+</g>
+<!-- Rt_Dist -->
+<g id="node71" class="node">
+<title>Rt_Dist</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1156" cy="-189.8" rx="42.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1156" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">DistanceKm</text>
+</g>
+<!-- Route&#45;&#45;Rt_Dist -->
+<g id="edge47" class="edge">
+<title>Route--Rt_Dist</title>
+<path fill="none" stroke="black" d="M1268.34,-262.06C1242.2,-245.48 1203.45,-220.9 1178.97,-205.37"/>
+</g>
+<!-- Rt_Dur -->
+<g id="node72" class="node">
+<title>Rt_Dur</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1296" cy="-189.8" rx="68.78" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1296" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">EstimatedDurationMin</text>
+</g>
+<!-- Route&#45;&#45;Rt_Dur -->
+<g id="edge48" class="edge">
+<title>Route--Rt_Dur</title>
+<path fill="none" stroke="black" d="M1296,-262.06C1296,-246.39 1296,-223.57 1296,-208.01"/>
+</g>
+<!-- Airport -->
+<g id="node10" class="node">
+<title>Airport</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="1563,-117 1509,-117 1509,-81 1563,-81 1563,-117"/>
+<text xml:space="preserve" text-anchor="middle" x="1536" y="-96" font-family="Helvetica,sans-Serif" font-size="10.00">Airport</text>
+</g>
+<!-- Apt_Id -->
+<g id="node73" class="node">
+<title>Apt_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1370" cy="-18" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="1365.83" y="-16" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Airport&#45;&#45;Apt_Id -->
+<g id="edge49" class="edge">
+<title>Airport--Apt_Id</title>
+<path fill="none" stroke="black" d="M1508.59,-84.95C1475.81,-69.35 1421.61,-43.56 1391.63,-29.29"/>
+</g>
+<!-- Apt_Code -->
+<g id="node74" class="node">
+<title>Apt_Code</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1453" cy="-18" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1453" y="-15" font-family="Helvetica,sans-Serif" font-size="10.00">Code</text>
+</g>
+<!-- Airport&#45;&#45;Apt_Code -->
+<g id="edge50" class="edge">
+<title>Airport--Apt_Code</title>
+<path fill="none" stroke="black" d="M1517.58,-80.47C1502.68,-66.28 1481.96,-46.56 1468.04,-33.32"/>
+</g>
+<!-- Apt_Name -->
+<g id="node75" class="node">
+<title>Apt_Name</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1536" cy="-18" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1536" y="-15" font-family="Helvetica,sans-Serif" font-size="10.00">Name</text>
+</g>
+<!-- Airport&#45;&#45;Apt_Name -->
+<g id="edge51" class="edge">
+<title>Airport--Apt_Name</title>
+<path fill="none" stroke="black" d="M1536,-80.47C1536,-67.38 1536,-49.56 1536,-36.48"/>
+</g>
+<!-- Apt_City -->
+<g id="node76" class="node">
+<title>Apt_City</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1619" cy="-18" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1619" y="-15" font-family="Helvetica,sans-Serif" font-size="10.00">City</text>
+</g>
+<!-- Airport&#45;&#45;Apt_City -->
+<g id="edge52" class="edge">
+<title>Airport--Apt_City</title>
+<path fill="none" stroke="black" d="M1554.42,-80.47C1569.32,-66.28 1590.04,-46.56 1603.96,-33.32"/>
+</g>
+<!-- Apt_Country -->
+<g id="node77" class="node">
+<title>Apt_Country</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1706" cy="-18" rx="30.68" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1706" y="-15" font-family="Helvetica,sans-Serif" font-size="10.00">Country</text>
+</g>
+<!-- Airport&#45;&#45;Apt_Country -->
+<g id="edge53" class="edge">
+<title>Airport--Apt_Country</title>
+<path fill="none" stroke="black" d="M1563.69,-85.13C1596.72,-69.79 1651.34,-44.4 1682.43,-29.95"/>
+</g>
+<!-- Crew -->
+<g id="node11" class="node">
+<title>Crew</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="599,-298.6 545,-298.6 545,-262.6 599,-262.6 599,-298.6"/>
+<text xml:space="preserve" text-anchor="middle" x="572" y="-277.6" font-family="Helvetica,sans-Serif" font-size="10.00">Crew</text>
+</g>
+<!-- Crew_Id -->
+<g id="node78" class="node">
+<title>Crew_Id</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="298" cy="-189.8" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="293.83" y="-187.8" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">Id</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Id -->
+<g id="edge54" class="edge">
+<title>Crew--Crew_Id</title>
+<path fill="none" stroke="black" d="M544.46,-272.02C500.58,-259.75 412.27,-234.21 339,-207.8 332.77,-205.55 326.09,-202.9 319.98,-200.36"/>
+</g>
+<!-- Crew_Name -->
+<g id="node79" class="node">
+<title>Crew_Name</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="381" cy="-189.8" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="381" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">Name</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Name -->
+<g id="edge55" class="edge">
+<title>Crew--Crew_Name</title>
+<path fill="none" stroke="black" d="M544.63,-266.88C506.37,-249.09 437.64,-217.13 402.69,-200.88"/>
+</g>
+<!-- Crew_Role -->
+<g id="node80" class="node">
+<title>Crew_Role</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="464" cy="-189.8" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="464" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">Role</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Role -->
+<g id="edge56" class="edge">
+<title>Crew--Crew_Role</title>
+<path fill="none" stroke="black" d="M550.66,-262.06C530.01,-245.07 499.14,-219.69 480.36,-204.25"/>
+</g>
+<!-- Crew_Lic -->
+<g id="node81" class="node">
+<title>Crew_Lic</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="572" cy="-189.8" rx="51.74" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="572" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">LicenseNumber</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Lic -->
+<g id="edge57" class="edge">
+<title>Crew--Crew_Lic</title>
+<path fill="none" stroke="black" d="M572,-262.06C572,-246.39 572,-223.57 572,-208.01"/>
+</g>
+<!-- Crew_Pass -->
+<g id="node82" class="node">
+<title>Crew_Pass</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="707" cy="-189.8" rx="54.74" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="707" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">PassportNumber</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Pass -->
+<g id="edge58" class="edge">
+<title>Crew--Crew_Pass</title>
+<path fill="none" stroke="black" d="M598.67,-262.06C623.41,-245.78 659.88,-221.79 683.54,-206.23"/>
+</g>
+<!-- Crew_Nat -->
+<g id="node83" class="node">
+<title>Crew_Nat</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="828" cy="-189.8" rx="37.7" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="828" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">Nationality</text>
+</g>
+<!-- Crew&#45;&#45;Crew_Nat -->
+<g id="edge59" class="edge">
+<title>Crew--Crew_Nat</title>
+<path fill="none" stroke="black" d="M599.68,-267.81C604.12,-266.01 608.67,-264.22 613,-262.6 630.69,-255.99 742.78,-218.91 797.72,-200.78"/>
+</g>
+<!-- Crew_DOB -->
+<g id="node84" class="node">
+<title>Crew_DOB</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="936" cy="-189.8" rx="41.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="936" y="-186.8" font-family="Helvetica,sans-Serif" font-size="10.00">DateOfBirth</text>
+</g>
+<!-- Crew&#45;&#45;Crew_DOB -->
+<g id="edge60" class="edge">
+<title>Crew--Crew_DOB</title>
+<path fill="none" stroke="black" d="M599.53,-267.35C603.98,-265.61 608.58,-263.96 613,-262.6 641.95,-253.72 850.65,-215.25 880,-207.8 887.68,-205.85 895.88,-203.51 903.57,-201.2"/>
+</g>
+<!-- Baggage -->
+<g id="node12" class="node">
+<title>Baggage</title>
+<polygon fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" points="2118.02,-484.2 2061.98,-484.2 2061.98,-448.2 2118.02,-448.2 2118.02,-484.2"/>
+<polygon fill="none" stroke="#1565c0" stroke-width="1.5" points="2122.02,-488.2 2057.98,-488.2 2057.98,-444.2 2122.02,-444.2 2122.02,-488.2"/>
+<text xml:space="preserve" text-anchor="middle" x="2090" y="-463.2" font-family="Helvetica,sans-Serif" font-size="10.00">Baggage</text>
+</g>
+<!-- Bag_Num -->
+<g id="node56" class="node">
+<title>Bag_Num</title>
+<ellipse fill="#ffffff" stroke="#37474f" stroke-dasharray="5,2" cx="2090" cy="-371.4" rx="55.09" ry="18"/>
+<text xml:space="preserve" text-anchor="start" x="2052.2" y="-369.4" font-family="Helvetica,sans-Serif" text-decoration="underline" font-size="10.00">BaggageNumber</text>
+</g>
+<!-- Baggage&#45;&#45;Bag_Num -->
+<g id="edge32" class="edge">
+<title>Baggage--Bag_Num</title>
+<path fill="none" stroke="black" d="M2090,-443.68C2090,-427.29 2090,-405.03 2090,-389.77"/>
+</g>
+<!-- Bag_Weight -->
+<g id="node57" class="node">
+<title>Bag_Weight</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2210" cy="-371.4" rx="35.69" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2210" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">WeightKg</text>
+</g>
+<!-- Baggage&#45;&#45;Bag_Weight -->
+<g id="edge33" class="edge">
+<title>Baggage--Bag_Weight</title>
+<path fill="none" stroke="black" d="M2117.83,-443.68C2140.4,-426.22 2171.6,-402.1 2191.28,-386.87"/>
+</g>
+<!-- Bag_Type -->
+<g id="node58" class="node">
+<title>Bag_Type</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="2302" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2302" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Type</text>
+</g>
+<!-- Baggage&#45;&#45;Bag_Type -->
+<g id="edge34" class="edge">
+<title>Baggage--Bag_Type</title>
+<path fill="none" stroke="black" d="M2122.66,-450.9C2166.22,-431.84 2242.17,-398.59 2279.71,-382.16"/>
+</g>
+<!-- Bag_Fee -->
+<g id="node59" class="node">
+<title>Bag_Fee</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="1979" cy="-371.4" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1979" y="-368.4" font-family="Helvetica,sans-Serif" font-size="10.00">Fee</text>
+</g>
+<!-- Baggage&#45;&#45;Bag_Fee -->
+<g id="edge35" class="edge">
+<title>Baggage--Bag_Fee</title>
+<path fill="none" stroke="black" d="M2064.26,-443.68C2042.99,-425.9 2013.46,-401.21 1995.32,-386.04"/>
+</g>
+<!-- Makes&#45;&#45;Booking -->
+<g id="edge63" class="edge">
+<title>Makes--Booking</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1543.26,-925.71C1478.28,-909.68 1303.18,-866.49 1235.36,-849.76"/>
+<text xml:space="preserve" text-anchor="middle" x="1413.3" y="-884.71" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Has&#45;&#45;PassengerProfile -->
+<g id="edge65" class="edge">
+<title>Has--PassengerProfile</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1736.41,-921.97C1755.09,-907.16 1790.71,-878.92 1813.9,-860.53"/>
+<text xml:space="preserve" text-anchor="middle" x="1789.21" y="-884.71" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Paid_By&#45;&#45;Payment -->
+<g id="edge67" class="edge">
+<title>Paid_By--Payment</title>
+<path fill="none" stroke="black" stroke-width="3" d="M908.41,-742.26C897.64,-739.04 884.79,-735.53 873,-733.21 642.5,-687.78 358.62,-668.27 269.28,-662.97"/>
+<text xml:space="preserve" text-anchor="middle" x="738.2" y="-703.11" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Contains&#45;&#45;Ticket -->
+<g id="edge69" class="edge">
+<title>Contains--Ticket</title>
+<path fill="none" stroke="black" stroke-width="3" d="M1080,-742.43C1090.77,-739.35 1103.44,-735.9 1115,-733.21 1246.77,-702.52 1406.46,-675.86 1469.5,-665.74"/>
+<text xml:space="preserve" text-anchor="middle" x="1275.46" y="-703.11" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Issued_For&#45;&#45;Flight -->
+<g id="edge71" class="edge">
+<title>Issued_For--Flight</title>
+<path fill="none" stroke="black" d="M1720.66,-555.13C1707.41,-550.84 1691.01,-546.02 1676,-543 1411.3,-489.76 1083.55,-472.4 987.59,-468.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1542.88" y="-512.9" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Belongs_To&#45;&#45;SeatClass -->
+<g id="edge73" class="edge">
+<title>Belongs_To--SeatClass</title>
+<path fill="none" stroke="black" d="M1875.57,-551.61C1854.83,-534.54 1817.86,-504.12 1794.43,-484.83"/>
+<text xml:space="preserve" text-anchor="middle" x="1838.04" y="-512.9" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Operates&#45;&#45;Flight -->
+<g id="edge77" class="edge">
+<title>Operates--Flight</title>
+<path fill="none" stroke="black" stroke-width="3" d="M537.71,-555.47C549.42,-551.31 563.84,-546.51 577,-543 708.31,-507.96 868.87,-481.31 932.32,-471.4"/>
+<text xml:space="preserve" text-anchor="middle" x="716.57" y="-512.9" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+<!-- Follows&#45;&#45;Route -->
+<g id="edge79" class="edge">
+<title>Follows--Route</title>
+<path fill="none" stroke="black" d="M1296,-352.86C1296,-337.29 1296,-314.66 1296,-299.11"/>
+<text xml:space="preserve" text-anchor="middle" x="1298.5" y="-323.3" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Departs_From&#45;&#45;Airport -->
+<g id="edge81" class="edge">
+<title>Departs_From--Airport</title>
+<path fill="none" stroke="black" d="M1473.89,-174.53C1486.8,-159.04 1507.43,-134.28 1521.34,-117.59"/>
+<text xml:space="preserve" text-anchor="middle" x="1505.93" y="-141.7" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Arrives_At&#45;&#45;Airport -->
+<g id="edge83" class="edge">
+<title>Arrives_At--Airport</title>
+<path fill="none" stroke="black" d="M1600.46,-175.31C1587.25,-159.88 1565.59,-134.57 1551.06,-117.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1581.05" y="-141.7" font-family="Helvetica,sans-Serif" font-size="9.00">1</text>
+</g>
+<!-- Assigned_To&#45;&#45;Crew -->
+<g id="edge85" class="edge">
+<title>Assigned_To--Crew</title>
+<path fill="none" stroke="black" d="M626.27,-355.74C614.94,-340.27 597.1,-315.89 584.99,-299.35"/>
+<text xml:space="preserve" text-anchor="middle" x="611.64" y="-323.3" font-family="Helvetica,sans-Serif" font-size="9.00">N</text>
+</g>
+<!-- Rel_DutyRole -->
+<g id="node85" class="node">
+<title>Rel_DutyRole</title>
+<ellipse fill="#ffffff" stroke="#37474f" cx="662" cy="-280.6" rx="34.35" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="662" y="-277.6" font-family="Helvetica,sans-Serif" font-size="10.00">DutyRole</text>
+</g>
+<!-- Assigned_To&#45;&#45;Rel_DutyRole -->
+<g id="edge61" class="edge">
+<title>Assigned_To--Rel_DutyRole</title>
+<path fill="none" stroke="black" d="M641.59,-354.11C646.01,-338.39 652.69,-314.68 657.19,-298.69"/>
+</g>
+<!-- Includes&#45;&#45;Baggage -->
+<g id="edge75" class="edge">
+<title>Includes--Baggage</title>
+<path fill="none" stroke="black" stroke-width="3" d="M2059.33,-545.58C2065.67,-529.38 2074.84,-505.94 2081.5,-488.92"/>
+<text xml:space="preserve" text-anchor="middle" x="2075.89" y="-512.9" font-family="Helvetica,sans-Serif" font-size="9.00">M</text>
+</g>
+</g>
+</svg>
