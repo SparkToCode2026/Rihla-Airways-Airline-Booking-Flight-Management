@@ -34,6 +34,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // stops "A possible object cycle was detected" from 500-ing the API
+        // when someone returns a raw entity with navigation properties.
+        // output DTOs are still the right fix - this is just a seatbelt
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // commented out on purpose - the js frontend and postman both choke on the
 // 307 redirect when we're running plain http locally. turn it back on
