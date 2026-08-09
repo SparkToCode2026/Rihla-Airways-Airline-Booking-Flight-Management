@@ -1,0 +1,14 @@
+$kind: http-request
+name: /api/Bookings/:id
+url: "{{baseUrl}}/api/Bookings/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/-api-Bookings-id.resources/examples
+order: 2000

@@ -1,0 +1,23 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Tickets/:id"
+  method: PUT
+  headers:
+    Content-Type: application/json
+  pathVariables:
+    id: "4087"
+  body:
+    type: json
+    content: |-
+      {
+        "seatNumber": "string",
+        "seatClassId": 2413,
+        "passengerName": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

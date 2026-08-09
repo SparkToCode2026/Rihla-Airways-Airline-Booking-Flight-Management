@@ -1,0 +1,19 @@
+$kind: http-request
+name: /api/Tickets/:id
+url: "{{baseUrl}}/api/Tickets/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "seatNumber": "string",
+      "seatClassId": 2413,
+      "passengerName": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Tickets-id.resources/examples
+order: 2000

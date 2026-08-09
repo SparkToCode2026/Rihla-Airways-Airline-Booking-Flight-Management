@@ -30,7 +30,11 @@ public class BookingsController : ControllerBase
 
     // --- output DTO ---
     // Include(b => b.User) dragged PasswordHash along and Include(b =>
-    // b.Tickets) dragged every passenger name - on an anonymous endpoint
+    // b.Tickets) dragged every passenger name - on an anonymous endpoint.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .BookingDate back to a column through the
+    // constructor. sort the entities first
     public record BookingResponseDto(
         int Id, int UserId, string CustomerName, string CustomerEmail,
         DateTime BookingDate, string Status, decimal TotalAmount,
@@ -239,7 +243,10 @@ public class BookingsController : ControllerBase
             query = query.Where(b => b.UserId == uid);
         }
 
-        return Ok(await ToDto(query).OrderByDescending(b => b.BookingDate).ToListAsync());
+        // OrderByDescending moved INSIDE the ToDto call, onto the entities -
+        // chained onto the result it compiles and throws at runtime.
+        // new fix
+        return Ok(await ToDto(query.OrderByDescending(b => b.BookingDate)).ToListAsync());
     }
 
 
@@ -290,7 +297,8 @@ public class BookingsController : ControllerBase
         if (!string.IsNullOrWhiteSpace(customerEmail))
             query = query.Where(b => b.User.Email.Contains(customerEmail));
 
-        return Ok(await ToDto(query).OrderByDescending(b => b.BookingDate).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderByDescending(b => b.BookingDate)).ToListAsync());
     }
 
 
@@ -299,6 +307,8 @@ public class BookingsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byStatus = await _context.Bookings
             .GroupBy(b => b.Status)
             .Select(g => new

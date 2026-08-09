@@ -1,0 +1,23 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/PassengerProfiles"
+  method: POST
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "userId": 9379,
+        "passportNumber": "string",
+        "nationality": "string",
+        "dateOfBirth": "1984-08-28",
+        "phoneNumber": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

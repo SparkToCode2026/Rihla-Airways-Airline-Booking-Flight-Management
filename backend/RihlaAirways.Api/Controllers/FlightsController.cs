@@ -39,7 +39,11 @@ public class FlightsController : ControllerBase
     // the original returned entities with Tickets AND FlightCrews included.
     // for 100 flights with 100 tickets each that's 10,000 nested rows in one
     // response, plus the json cycle crash, plus every passenger name on an
-    // anonymous endpoint. counts are what the list view actually needs
+    // anonymous endpoint. counts are what the list view actually needs.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .DepartureTime back to a column once the values
+    // are inside the constructor. sort (and page) the entities first
     public record FlightResponseDto(
         int Id, string FlightNumber, string Status,
         DateTime DepartureTime, DateTime ArrivalTime, int DurationMin,
@@ -265,10 +269,18 @@ public class FlightsController : ControllerBase
         if (page < 1) page = 1;
 
         var total = await _context.Flights.CountAsync();
-        var items = await ToDto(_context.Flights)
-            .OrderBy(f => f.DepartureTime)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+
+        // the ORDER and the PAGING both happen on the entities, before the
+        // projection. it used to be ToDto(...).OrderBy(f => f.DepartureTime)
+        // .Skip().Take(), which compiles and then throws at runtime - EF Core
+        // can't see .DepartureTime through the record constructor.
+        // and Skip/Take without an OrderBy is undefined ordering in SQL
+        // anyway, so page 2 could repeat rows from page 1. new fix
+        var items = await ToDto(
+            _context.Flights
+                .OrderBy(f => f.DepartureTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize))
             .ToListAsync();
 
         return Ok(new { Total = total, Page = page, PageSize = pageSize, Items = items });
@@ -322,7 +334,8 @@ public class FlightsController : ControllerBase
             query = query.Where(f => f.Tickets.Count < f.Airplane.Capacity
                                   && f.Status == "Scheduled");
 
-        return Ok(await ToDto(query).OrderBy(f => f.DepartureTime).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(f => f.DepartureTime)).ToListAsync());
     }
 
 
@@ -331,6 +344,8 @@ public class FlightsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byStatus = await _context.Flights
             .GroupBy(f => f.Status)
             .Select(g => new

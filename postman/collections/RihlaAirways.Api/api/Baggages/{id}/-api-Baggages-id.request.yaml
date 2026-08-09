@@ -1,0 +1,18 @@
+$kind: http-request
+name: /api/Baggages/:id
+url: "{{baseUrl}}/api/Baggages/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "weightKg": 9774.714246822301,
+      "type": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Baggages-id.resources/examples
+order: 2000

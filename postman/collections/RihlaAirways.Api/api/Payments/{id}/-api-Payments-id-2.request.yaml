@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Payments/:id
+url: "{{baseUrl}}/api/Payments/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Payments-id-2.resources/examples
+order: 4000

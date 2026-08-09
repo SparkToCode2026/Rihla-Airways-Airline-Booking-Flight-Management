@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Payments
+url: "{{baseUrl}}/api/Payments"
+method: GET
+settings: {}
+examples: ./.resources/-api-Payments-1.resources/examples
+order: 5000

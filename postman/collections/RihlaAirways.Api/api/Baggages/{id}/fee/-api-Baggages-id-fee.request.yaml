@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Baggages/:id/fee
+url: "{{baseUrl}}/api/Baggages/:id/fee"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "fee": 1867.8459945849556
+    }
+settings: {}
+examples: ./.resources/-api-Baggages-id-fee.resources/examples
+order: 1000

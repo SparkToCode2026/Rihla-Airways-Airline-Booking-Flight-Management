@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Payments/stats
+url: "{{baseUrl}}/api/Payments/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-Payments-stats.resources/examples
+order: 1000

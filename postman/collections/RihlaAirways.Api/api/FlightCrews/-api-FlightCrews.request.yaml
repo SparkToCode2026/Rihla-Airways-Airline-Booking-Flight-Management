@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/FlightCrews
+url: "{{baseUrl}}/api/FlightCrews"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "flightId": 870,
+      "crewId": 5862,
+      "dutyRole": "string"
+    }
+settings: {}
+examples: ./.resources/-api-FlightCrews.resources/examples
+order: 4000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/SeatClasses/stats
+url: "{{baseUrl}}/api/SeatClasses/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-SeatClasses-stats.resources/examples
+order: 1000

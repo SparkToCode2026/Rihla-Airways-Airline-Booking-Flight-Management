@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Airplanes/:id/capacity
+url: "{{baseUrl}}/api/Airplanes/:id/capacity"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "capacity": 9057
+    }
+settings: {}
+examples: ./.resources/-api-Airplanes-id-capacity.resources/examples
+order: 1000

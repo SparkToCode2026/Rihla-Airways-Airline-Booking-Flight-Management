@@ -44,7 +44,13 @@ public class RoutesController : ControllerBase
 
     // this is where the two-FKs-to-one-table design finally pays off -
     // OriginAirport and DestinationAirport resolve independently because
-    // [InverseProperty] in Route.cs told EF Core which is which
+    // [InverseProperty] in Route.cs told EF Core which is which.
+    //
+    // never chain .OrderBy() onto the RESULT of this - it's a positional
+    // record, so EF Core can't map .OriginCode back to a column once the
+    // values are inside a constructor call. sort the ENTITIES first, and
+    // note the property paths differ: the dto has OriginCode, the entity
+    // has OriginAirport.Code
     private static readonly Func<IQueryable<Route>, IQueryable<RouteResponseDto>> ToDto =
         q => q.Select(r => new RouteResponseDto(
             r.Id,
@@ -182,8 +188,15 @@ public class RoutesController : ControllerBase
                        // flight rows. the network map is public information
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Routes)
-            .OrderBy(r => r.OriginCode).ThenBy(r => r.DestinationCode)
+        // OrderBy moved INSIDE the ToDto call. it used to be chained onto
+        // the result as .OrderBy(r => r.OriginCode), which compiles but dies
+        // at runtime - EF Core can't see through the record constructor.
+        // note the path changes too: OriginCode on the dto is
+        // OriginAirport.Code on the entity. new fix
+        return Ok(await ToDto(
+            _context.Routes
+                .OrderBy(r => r.OriginAirport.Code)
+                .ThenBy(r => r.DestinationAirport.Code))
             .ToListAsync());
     }
 
@@ -230,7 +243,8 @@ public class RoutesController : ControllerBase
         if (!string.IsNullOrWhiteSpace(destinationCountry))
             query = query.Where(r => r.DestinationAirport.Country.Contains(destinationCountry));
 
-        return Ok(await ToDto(query).OrderBy(r => r.DistanceKm).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(r => r.DistanceKm)).ToListAsync());
     }
 
 
@@ -246,7 +260,11 @@ public class RoutesController : ControllerBase
         // OrderBy (the spec asks for sorting on this case), and shadowed r
         // with a second r in the inner lambdas.
         // new fix - grouped per origin airport, which is an actual
-        // aggregate and reaches across a relationship
+        // aggregate and reaches across a relationship.
+        //
+        // the OrderByDescending here is safe AFTER the Select because this
+        // projects to an anonymous type - those keep their property names
+        // visible to EF Core, unlike the positional records in ToDto
         var byOrigin = await _context.Routes
             .GroupBy(r => new { r.OriginAirportId, r.OriginAirport.Code, r.OriginAirport.City })
             .Select(g => new

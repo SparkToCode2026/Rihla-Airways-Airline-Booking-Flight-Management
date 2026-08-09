@@ -1,0 +1,10 @@
+$kind: collection
+name: RihlaAirways.Api
+description: ""
+variables:
+  baseUrl: /
+  token: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"

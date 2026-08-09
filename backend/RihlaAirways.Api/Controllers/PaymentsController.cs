@@ -37,7 +37,11 @@ public class PaymentsController : ControllerBase
     // --- output DTO ---
     // Include(p => p.Booking) dragged Booking along, and Booking has a User,
     // and User has PasswordHash - on an anonymous endpoint. flattened to
-    // just the booking fields that matter here
+    // just the booking fields that matter here.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .PaymentDate back to a column once the values
+    // are inside the constructor. sort the entities first
     public record PaymentResponseDto(
         int Id, int BookingId, decimal Amount, DateTime PaymentDate,
         string Method, string Status,
@@ -84,6 +88,12 @@ public class PaymentsController : ControllerBase
 
         if (booking.Status == "Cancelled")
             return Conflict("Cannot pay for a cancelled booking.");
+
+        // paying for a booking with no tickets means paying zero, which the
+        // Range on Amount already rejects - but the message here explains
+        // WHY rather than just saying the number is out of range
+        if (booking.TotalAmount <= 0m)
+            return Conflict("This booking has no tickets yet, so there is nothing to pay.");
 
         // the amount has to actually cover the booking. without this you can
         // pay 5 for a 500 booking and the system happily marks it complete
@@ -186,9 +196,12 @@ public class PaymentsController : ControllerBase
 
         // deleting a completed payment erases the record that money was
         // received while the booking stays Confirmed - the booking would
-        // then look paid with nothing backing it. refund it instead
-        if (payment.Status == "Completed")
-            return Conflict("Cannot delete a completed payment. Refund it instead.");
+        // then look paid with nothing backing it. refund it instead.
+        // note Refunded is blocked too - a refund is still a financial
+        // event that has to stay on the record
+        if (payment.Status is "Completed" or "Refunded")
+            return Conflict($"Cannot delete a {payment.Status.ToLower()} payment — " +
+                            "the financial record must survive.");
 
         _context.Payments.Remove(payment);
         await _context.SaveChangesAsync();
@@ -202,8 +215,11 @@ public class PaymentsController : ControllerBase
                                           // records. worst one in the file
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Payments)
-            .OrderByDescending(p => p.PaymentDate)
+        // OrderByDescending moved INSIDE the ToDto call, onto the entities.
+        // chained onto the result it compiles and then throws at runtime -
+        // EF Core can't see through the record constructor. new fix
+        return Ok(await ToDto(
+            _context.Payments.OrderByDescending(p => p.PaymentDate))
             .ToListAsync());
     }
 
@@ -249,7 +265,8 @@ public class PaymentsController : ControllerBase
         if (toDate.HasValue)
             query = query.Where(p => p.PaymentDate <= toDate.Value);
 
-        return Ok(await ToDto(query).OrderByDescending(p => p.PaymentDate).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderByDescending(p => p.PaymentDate)).ToListAsync());
     }
 
 
@@ -258,6 +275,8 @@ public class PaymentsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are fine after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byMethod = await _context.Payments
             .GroupBy(p => p.Method)
             .Select(g => new

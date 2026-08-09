@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/Routes/:id
+url: "{{baseUrl}}/api/Routes/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "originAirportId": 1625,
+      "destinationAirportId": 298,
+      "distanceKm": 5231,
+      "estimatedDurationMin": 9498
+    }
+settings: {}
+examples: ./.resources/-api-Routes-id.resources/examples
+order: 2000

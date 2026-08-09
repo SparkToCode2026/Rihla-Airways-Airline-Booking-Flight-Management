@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Routes/:id
+url: "{{baseUrl}}/api/Routes/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Routes-id-2.resources/examples
+order: 4000

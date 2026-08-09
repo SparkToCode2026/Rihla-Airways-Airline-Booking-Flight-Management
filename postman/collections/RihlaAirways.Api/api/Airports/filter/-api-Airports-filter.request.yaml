@@ -1,0 +1,13 @@
+$kind: http-request
+name: /api/Airports/filter
+url: "{{baseUrl}}/api/Airports/filter?country=string&city=string&code=string&search=string&connectedOnly=true"
+method: GET
+queryParams:
+  country: string
+  city: string
+  code: string
+  search: string
+  connectedOnly: "true"
+settings: {}
+examples: ./.resources/-api-Airports-filter.resources/examples
+order: 1000

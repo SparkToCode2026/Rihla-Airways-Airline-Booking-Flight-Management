@@ -1,0 +1,10 @@
+$kind: http-request
+name: /api/Flights
+url: "{{baseUrl}}/api/Flights?page=1&pageSize=50"
+method: GET
+queryParams:
+  page: "1"
+  pageSize: "50"
+settings: {}
+examples: ./.resources/-api-Flights-1.resources/examples
+order: 5000

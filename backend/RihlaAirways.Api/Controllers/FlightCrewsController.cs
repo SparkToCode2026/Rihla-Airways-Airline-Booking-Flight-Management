@@ -31,7 +31,12 @@ public class FlightCrewsController : ControllerBase
     // --- output DTO ---
     // Include(fc => fc.Crew) returned PassportNumber, Nationality and
     // DateOfBirth - the immigration fields we added to Crew - on an
-    // anonymous endpoint. a roster needs a name and a licence, nothing more
+    // anonymous endpoint. a roster needs a name and a licence, nothing more.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // EF Core can't map .DepartureTime back to a column through the
+    // constructor. and note the path differs: DepartureTime on the dto is
+    // Flight.DepartureTime on the entity
     public record FlightCrewResponseDto(
         int Id,
         int FlightId, string FlightNumber, DateTime DepartureTime,
@@ -170,11 +175,18 @@ public class FlightCrewsController : ControllerBase
     {
         var fc = await _context.FlightCrews
             .Include(x => x.Crew)
+            .Include(x => x.Flight)
             .FirstOrDefaultAsync(x => x.Id == id);
         if (fc == null) return NotFound();
 
         if (!ValidDutyRoles.Contains(dto.DutyRole))
             return BadRequest($"DutyRole must be one of: {string.Join(", ", ValidDutyRoles)}");
+
+        // the PUT blocks roster changes on a departed flight but this PATCH
+        // didn't - same rule, two endpoints, one of them was missing it.
+        // needs the Include(x => x.Flight) above to read Status. new fix
+        if (fc.Flight.Status is "Departed" or "Landed")
+            return Conflict($"Cannot change the roster of a {fc.Flight.Status.ToLower()} flight.");
 
         if (CockpitDuties.Contains(dto.DutyRole) && !PilotJobTitles.Contains(fc.Crew.Role))
             return BadRequest($"{fc.Crew.Name} is a {fc.Crew.Role} and cannot be assigned as {dto.DutyRole}.");
@@ -220,9 +232,14 @@ public class FlightCrewsController : ControllerBase
                                           // crew passport numbers and DOBs
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.FlightCrews)
-            .OrderBy(fc => fc.DepartureTime)
-            .ThenBy(fc => fc.DutyRole)
+        // OrderBy moved INSIDE the ToDto call, and the path changes with it:
+        // fc.DepartureTime on the dto is fc.Flight.DepartureTime on the
+        // entity. chained onto the result it compiles and throws at
+        // runtime - new fix
+        return Ok(await ToDto(
+            _context.FlightCrews
+                .OrderBy(fc => fc.Flight.DepartureTime)
+                .ThenBy(fc => fc.DutyRole))
             .ToListAsync());
     }
 
@@ -273,7 +290,9 @@ public class FlightCrewsController : ControllerBase
         if (toDate.HasValue)
             query = query.Where(fc => fc.Flight.DepartureTime <= toDate.Value);
 
-        return Ok(await ToDto(query).OrderBy(fc => fc.DepartureTime).ToListAsync());
+        // same fix as GetAll - sort the entities on Flight.DepartureTime,
+        // then project
+        return Ok(await ToDto(query.OrderBy(fc => fc.Flight.DepartureTime)).ToListAsync());
     }
 
 
@@ -282,6 +301,8 @@ public class FlightCrewsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byDutyRole = await _context.FlightCrews
             .GroupBy(fc => fc.DutyRole)
             .Select(g => new

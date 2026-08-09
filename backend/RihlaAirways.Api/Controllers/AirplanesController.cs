@@ -34,7 +34,11 @@ public class AirplanesController : ControllerBase
 
     // --- output DTO ---
     // Include(a => a.Flights) returned every flight row nested in every
-    // airplane. counts and a utilisation figure are what a fleet list needs
+    // airplane. counts and a utilisation figure are what a fleet list needs.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .Model back to a column through the constructor.
+    // sort the entities first
     public record AirplaneResponseDto(
         int Id, string Model, string RegistrationNumber,
         int Capacity, int ManufactureYear, int AgeYears,
@@ -181,8 +185,12 @@ public class AirplanesController : ControllerBase
                                           // is internal operational data
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Airplanes)
-            .OrderBy(a => a.Model).ThenBy(a => a.RegistrationNumber)
+        // OrderBy moved INSIDE the ToDto call, onto the entities - chained
+        // onto the result it compiles and throws at runtime. new fix
+        return Ok(await ToDto(
+            _context.Airplanes
+                .OrderBy(a => a.Model)
+                .ThenBy(a => a.RegistrationNumber))
             .ToListAsync());
     }
 
@@ -242,7 +250,8 @@ public class AirplanesController : ControllerBase
                 f.Status != "Cancelled"));
         }
 
-        return Ok(await ToDto(query).OrderBy(a => a.Model).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(a => a.Model)).ToListAsync());
     }
 
 
@@ -251,6 +260,8 @@ public class AirplanesController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byModel = await _context.Airplanes
             .GroupBy(a => a.Model)
             .Select(g => new

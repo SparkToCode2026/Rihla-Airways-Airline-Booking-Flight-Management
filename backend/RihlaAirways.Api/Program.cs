@@ -107,6 +107,15 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+// seed on startup, dev only. the scope is required because AppDbContext is
+// registered as Scoped and there's no request scope at startup - asking the
+// root provider for a scoped service throws
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
 app.UseCors("AllowFrontend");
 
 // ORDER MATTERS, and this is the classic bug. authentication BEFORE

@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/Airplanes/:id
+url: "{{baseUrl}}/api/Airplanes/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "model": "string",
+      "registrationNumber": "string",
+      "capacity": 3666,
+      "manufactureYear": 4510
+    }
+settings: {}
+examples: ./.resources/-api-Airplanes-id.resources/examples
+order: 2000

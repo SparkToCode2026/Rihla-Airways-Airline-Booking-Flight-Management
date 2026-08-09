@@ -1,0 +1,17 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Routes/filter?originId=4087&destinationId=4087&maxDistance=4087&originCode=string&destinationCountry=string"
+  method: GET
+  queryParams:
+    originId: "4087"
+    destinationId: "4087"
+    maxDistance: "4087"
+    originCode: string
+    destinationCountry: string
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

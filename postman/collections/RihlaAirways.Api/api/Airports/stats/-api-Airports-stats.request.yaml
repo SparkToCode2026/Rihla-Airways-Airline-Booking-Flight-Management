@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Airports/stats
+url: "{{baseUrl}}/api/Airports/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-Airports-stats.resources/examples
+order: 1000

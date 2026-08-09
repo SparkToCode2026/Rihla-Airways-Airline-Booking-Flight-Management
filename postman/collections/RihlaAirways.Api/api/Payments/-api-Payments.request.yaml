@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Payments
+url: "{{baseUrl}}/api/Payments"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "bookingId": 6083,
+      "amount": 923.4999326740511,
+      "method": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Payments.resources/examples
+order: 4000

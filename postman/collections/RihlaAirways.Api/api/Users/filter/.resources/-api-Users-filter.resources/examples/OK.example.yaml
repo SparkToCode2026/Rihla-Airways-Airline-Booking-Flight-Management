@@ -1,0 +1,15 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Users/filter?role=string&email=string&registeredAfter=2026-04-27T01:55:28.288Z"
+  method: GET
+  queryParams:
+    role: string
+    email: string
+    registeredAfter: 2026-04-27T01:55:28.288Z
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

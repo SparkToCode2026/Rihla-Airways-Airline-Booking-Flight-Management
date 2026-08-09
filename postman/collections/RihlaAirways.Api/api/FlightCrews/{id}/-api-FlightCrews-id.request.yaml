@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/FlightCrews/:id
+url: "{{baseUrl}}/api/FlightCrews/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "dutyRole": "string"
+    }
+settings: {}
+examples: ./.resources/-api-FlightCrews-id.resources/examples
+order: 2000

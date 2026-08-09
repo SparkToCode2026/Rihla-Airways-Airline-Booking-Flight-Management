@@ -1,0 +1,12 @@
+$kind: http-request
+name: /api/PassengerProfiles/filter
+url: "{{baseUrl}}/api/PassengerProfiles/filter?nationality=string&passportNumber=string&minAge=4087&maxAge=4087"
+method: GET
+queryParams:
+  nationality: string
+  passportNumber: string
+  minAge: "4087"
+  maxAge: "4087"
+settings: {}
+examples: ./.resources/-api-PassengerProfiles-filter.resources/examples
+order: 1000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Users/stats
+url: "{{baseUrl}}/api/Users/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-Users-stats.resources/examples
+order: 1000

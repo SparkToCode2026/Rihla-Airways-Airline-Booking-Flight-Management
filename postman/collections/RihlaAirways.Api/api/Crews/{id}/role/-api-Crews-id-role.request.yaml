@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Crews/:id/role
+url: "{{baseUrl}}/api/Crews/:id/role"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "role": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Crews-id-role.resources/examples
+order: 1000

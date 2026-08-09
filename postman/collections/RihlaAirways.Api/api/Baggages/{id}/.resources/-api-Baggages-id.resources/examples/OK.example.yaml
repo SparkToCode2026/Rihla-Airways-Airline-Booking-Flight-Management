@@ -1,0 +1,22 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Baggages/:id"
+  method: PUT
+  headers:
+    Content-Type: application/json
+  pathVariables:
+    id: "4087"
+  body:
+    type: json
+    content: |-
+      {
+        "weightKg": 9774.714246822301,
+        "type": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

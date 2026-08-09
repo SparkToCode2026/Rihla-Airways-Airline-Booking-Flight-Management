@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Airports/:id
+url: "{{baseUrl}}/api/Airports/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Airports-id-2.resources/examples
+order: 4000

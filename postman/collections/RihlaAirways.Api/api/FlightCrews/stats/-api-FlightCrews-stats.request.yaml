@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/FlightCrews/stats
+url: "{{baseUrl}}/api/FlightCrews/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-FlightCrews-stats.resources/examples
+order: 1000

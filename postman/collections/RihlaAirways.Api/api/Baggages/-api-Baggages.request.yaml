@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Baggages
+url: "{{baseUrl}}/api/Baggages"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "ticketId": 6676,
+      "weightKg": 7817.274334893518,
+      "type": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Baggages.resources/examples
+order: 4000

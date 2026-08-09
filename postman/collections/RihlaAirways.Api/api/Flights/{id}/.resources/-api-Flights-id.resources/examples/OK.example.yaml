@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Flights/:id"
+  method: PUT
+  headers:
+    Content-Type: application/json
+  pathVariables:
+    id: "4087"
+  body:
+    type: json
+    content: |-
+      {
+        "flightNumber": "string",
+        "airplaneId": 2128,
+        "departureTime": "1999-11-29T05:49:02.172Z",
+        "arrivalTime": "2016-12-04T09:34:23.758Z"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

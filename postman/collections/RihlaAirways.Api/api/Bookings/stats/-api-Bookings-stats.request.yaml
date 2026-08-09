@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Bookings/stats
+url: "{{baseUrl}}/api/Bookings/stats"
+method: GET
+settings: {}
+examples: ./.resources/-api-Bookings-stats.resources/examples
+order: 1000

@@ -1,0 +1,19 @@
+$kind: http-request
+name: /api/SeatClasses/:id
+url: "{{baseUrl}}/api/SeatClasses/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "priceMultiplier": 1803.0208668968473,
+      "baggageAllowanceKg": 5562
+    }
+settings: {}
+examples: ./.resources/-api-SeatClasses-id.resources/examples
+order: 2000

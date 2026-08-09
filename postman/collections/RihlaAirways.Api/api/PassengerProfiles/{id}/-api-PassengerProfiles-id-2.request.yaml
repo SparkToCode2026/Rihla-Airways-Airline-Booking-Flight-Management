@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/PassengerProfiles/:id
+url: "{{baseUrl}}/api/PassengerProfiles/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-PassengerProfiles-id-2.resources/examples
+order: 4000

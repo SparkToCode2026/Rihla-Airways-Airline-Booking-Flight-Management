@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Baggages/:id
+url: "{{baseUrl}}/api/Baggages/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Baggages-id-2.resources/examples
+order: 4000

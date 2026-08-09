@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Crews/:id
+url: "{{baseUrl}}/api/Crews/:id"
+method: DELETE
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Crews-id-1.resources/examples
+order: 3000

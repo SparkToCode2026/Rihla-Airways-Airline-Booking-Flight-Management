@@ -51,7 +51,11 @@ public class CrewsController : ControllerBase
         string Nationality, int TotalAssignments, int UpcomingFlights);
 
     // note there's no DateOfBirth and no passport here at all - not masked,
-    // simply absent. a field you don't project can't leak
+    // simply absent. a field you don't project can't leak.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .Name back to a column through the constructor.
+    // sort the entities first
     private static readonly Func<IQueryable<Crew>, IQueryable<CrewSummaryDto>> ToSummary =
         q => q.Select(c => new CrewSummaryDto(
             c.Id, c.Name, c.Role, c.LicenseNumber, c.Nationality,
@@ -74,10 +78,16 @@ public class CrewsController : ControllerBase
         if (!ValidRoles.Contains(dto.Role))
             return BadRequest($"Role must be one of: {string.Join(", ", ValidRoles)}");
 
+        // uppercase FIRST, then check. the old version compared the raw dto
+        // value against the table but stored the uppercased one, so posting
+        // "om-p-1001" would pass this check and then collide with the
+        // existing "OM-P-1001" at the unique index. new fix
+        var licence = dto.LicenseNumber.ToUpper();
+
         // Crews.LicenseNumber is a unique index - a duplicate throws
         // DbUpdateException instead of saying what's wrong
-        if (await _context.Crews.AnyAsync(c => c.LicenseNumber == dto.LicenseNumber))
-            return Conflict($"Licence {dto.LicenseNumber} is already registered.");
+        if (await _context.Crews.AnyAsync(c => c.LicenseNumber == licence))
+            return Conflict($"Licence {licence} is already registered.");
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         if (dto.DateOfBirth > today)
@@ -95,7 +105,7 @@ public class CrewsController : ControllerBase
         {
             Name = dto.Name,
             Role = dto.Role,
-            LicenseNumber = dto.LicenseNumber.ToUpper(),
+            LicenseNumber = licence,
             PassportNumber = dto.PassportNumber.ToUpper(),
             Nationality = dto.Nationality,
             DateOfBirth = dto.DateOfBirth
@@ -214,7 +224,7 @@ public class CrewsController : ControllerBase
         var assignments = await _context.FlightCrews.CountAsync(fc => fc.CrewId == id);
         if (assignments > 0)
             return Conflict(
-                $"Cannot delete {crew.Name} — {assignmentText(assignments)} on record. " +
+                $"Cannot delete {crew.Name} — {AssignmentText(assignments)} on record. " +
                 "Crew assignment history is permanent; mark them inactive instead.");
 
         _context.Crews.Remove(crew);
@@ -230,7 +240,10 @@ public class CrewsController : ControllerBase
                                           // and full flight history
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToSummary(_context.Crews).OrderBy(c => c.Name).ToListAsync());
+        // OrderBy moved INSIDE the ToSummary call, onto the entities -
+        // chained onto the result it compiles and throws at runtime.
+        // new fix
+        return Ok(await ToSummary(_context.Crews.OrderBy(c => c.Name)).ToListAsync());
     }
 
 
@@ -296,7 +309,8 @@ public class CrewsController : ControllerBase
                 fc.Flight.Status != "Cancelled"));
         }
 
-        return Ok(await ToSummary(query).OrderBy(c => c.Name).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToSummary(query.OrderBy(c => c.Name)).ToListAsync());
     }
 
 
@@ -305,6 +319,8 @@ public class CrewsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byRole = await _context.Crews
             .GroupBy(c => c.Role)
             .Select(g => new
@@ -350,7 +366,9 @@ public class CrewsController : ControllerBase
 
     private static bool ValidPilotRoles(string role) => role is "Pilot" or "CoPilot";
 
-    private static string assignmentText(int n) =>
+    // renamed to PascalCase - it's a method, and lowercase private methods
+    // read like fields at a glance
+    private static string AssignmentText(int n) =>
         n == 1 ? "1 flight assignment" : $"{n} flight assignments";
 
     private async Task<CrewDetailDto?> GetDetailAsync(int id)

@@ -1,0 +1,24 @@
+$kind: http-request
+name: /api/Auth/login
+url: "{{baseUrl}}/api/Auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "string",
+      "password": "string"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // stores the token in the collection variable so all requests pick it
+      // up automatically - beats pasting a 400-char string every two hours
+      const data = pm.response.json();
+      pm.collectionVariables.set("token", data.token);
+settings: {}
+examples: ./.resources/-api-Auth-login.resources/examples
+order: 1000

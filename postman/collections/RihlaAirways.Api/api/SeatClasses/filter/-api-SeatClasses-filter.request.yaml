@@ -1,0 +1,12 @@
+$kind: http-request
+name: /api/SeatClasses/filter
+url: "{{baseUrl}}/api/SeatClasses/filter?name=string&minMultiplier=6442.0692054369165&maxMultiplier=6442.0692054369165&minBaggageKg=4087"
+method: GET
+queryParams:
+  name: string
+  minMultiplier: "6442.0692054369165"
+  maxMultiplier: "6442.0692054369165"
+  minBaggageKg: "4087"
+settings: {}
+examples: ./.resources/-api-SeatClasses-filter.resources/examples
+order: 1000

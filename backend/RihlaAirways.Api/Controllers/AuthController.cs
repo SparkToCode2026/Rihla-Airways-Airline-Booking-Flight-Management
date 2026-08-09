@@ -16,11 +16,13 @@ public class AuthController : ControllerBase
     
     private readonly AppDbContext _context;
     private readonly TokenService _tokens;
-    
-    public AuthController(AppDbContext context, TokenService tokens)
+    private readonly IConfiguration _config;
+
+    public AuthController(AppDbContext context, TokenService tokens, IConfiguration config)
     {
         _context = context;
         _tokens = tokens;
+        _config = config;
     }
     // no Role field here, deliberately. self-registration ALWAYS creates a
     // Passenger - if the client could pick, anyone could sign up as Admin
@@ -107,6 +109,6 @@ public class AuthController : ControllerBase
 
     private AuthResponseDto BuildResponse(User user) => new(
         _tokens.CreateToken(user), user.Id, user.Name, user.Email, user.Role,
-        DateTime.UtcNow.AddMinutes(120)); //2 hrs 
+        DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:ExpiryMinutes"] ?? "120")));//2hrs
     
 }

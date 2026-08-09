@@ -1,0 +1,21 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Airplanes/:id/capacity"
+  method: PATCH
+  headers:
+    Content-Type: application/json
+  pathVariables:
+    id: "4087"
+  body:
+    type: json
+    content: |-
+      {
+        "capacity": 9057
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

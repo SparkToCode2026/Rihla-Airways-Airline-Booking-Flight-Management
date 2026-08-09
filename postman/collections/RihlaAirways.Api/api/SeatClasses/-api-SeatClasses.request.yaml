@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/SeatClasses
+url: "{{baseUrl}}/api/SeatClasses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "priceMultiplier": 1803.0208668968473,
+      "baggageAllowanceKg": 5562
+    }
+settings: {}
+examples: ./.resources/-api-SeatClasses.resources/examples
+order: 4000

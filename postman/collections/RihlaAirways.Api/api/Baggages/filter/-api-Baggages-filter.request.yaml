@@ -1,0 +1,13 @@
+$kind: http-request
+name: /api/Baggages/filter
+url: "{{baseUrl}}/api/Baggages/filter?type=string&minWeight=6442.0692054369165&maxWeight=6442.0692054369165&flightId=4087&overweightOnly=true"
+method: GET
+queryParams:
+  type: string
+  minWeight: "6442.0692054369165"
+  maxWeight: "6442.0692054369165"
+  flightId: "4087"
+  overweightOnly: "true"
+settings: {}
+examples: ./.resources/-api-Baggages-filter.resources/examples
+order: 1000
