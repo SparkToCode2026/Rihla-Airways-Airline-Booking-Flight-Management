@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using RihlaAirways.Api.Data;
 using RihlaAirways.Api.Models;
-
+using RihlaAirways.Api.Services;
 namespace RihlaAirways.Api.Controllers;
 
 [ApiController]
@@ -12,8 +12,13 @@ namespace RihlaAirways.Api.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IEmailService _email;
 
-    public PaymentsController(AppDbContext context) => _context = context;
+    public PaymentsController(AppDbContext context,  IEmailService email)
+    {
+        _context = context;
+        _email = email;
+    }
 
     // --- input DTOs ---
     // no Status on create - a payment always starts Pending and moves
@@ -172,15 +177,25 @@ public class PaymentsController : ControllerBase
         {
             payment.Booking.Status = "Confirmed";
             payment.PaymentDate = DateTime.UtcNow;
-            // TODO week 2: _emailService.SendBookingConfirmationAsync(payment.BookingId)
-            // deliberately left as a hook - the service doesn't exist yet
-            // and this is the one place it needs to be called from
         }
 
         if (dto.Status == "Refunded")
             payment.Booking.Status = "Cancelled";
 
         await _context.SaveChangesAsync();
+
+        // email AFTER SaveChanges, deliberately. two reasons:
+        // 1) we don't want to send "booking confirmed" and then have the save
+        //    fail - the customer would have an e-ticket for nothing
+        // 2) the service re-queries the booking, so the data has to be
+        //    committed before it runs or it reads the old status
+        //
+        // note there's no try/catch here - EmailService swallows its own
+        // exceptions internally. that's on purpose: a mail server being down
+        // must never turn a successful payment into a 500. see the long
+        // comment in EmailService.SendAsync
+        if (dto.Status == "Completed")
+            await _email.SendBookingConfirmationAsync(payment.BookingId);
 
         return Ok(await ToDto(_context.Payments.Where(p => p.Id == id)).FirstAsync());
     }

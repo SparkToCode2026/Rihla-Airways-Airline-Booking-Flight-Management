@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using RihlaAirways.Api.Data;
 using RihlaAirways.Api.Models;
-
+using RihlaAirways.Api.Services;
 namespace RihlaAirways.Api.Controllers;
 
 [ApiController]
@@ -12,10 +12,13 @@ namespace RihlaAirways.Api.Controllers;
 public class FlightsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IEmailService _email;
 
-    public FlightsController(AppDbContext context) => _context = context;
-
-    // --- input DTOs ---
+    public FlightsController(AppDbContext context, IEmailService email)
+    {
+        _context = context;
+        _email = email;
+    }    // --- input DTOs ---
     // no Status on create - a flight always starts Scheduled and moves
     // through the state machine below
     public record FlightCreateDto(
@@ -220,12 +223,14 @@ public class FlightsController : ControllerBase
         flight.Status = dto.Status;
         await _context.SaveChangesAsync();
 
-        // the spec's second email trigger lives here - flight status /
-        // reminder notifications. leaving the hook so nobody has to hunt
-        // for the right place in week 2
-        // TODO week 2: if Delayed or Cancelled ->
-        //   _emailService.SendFlightStatusAsync(id, dto.Status) for every
-        //   passenger holding a ticket on this flight
+        // the spec's second email trigger. one status change fans out to
+        // every passenger holding a ticket on this flight - the service
+        // handles the Flight -> Tickets -> Booking -> User chain.
+        // only Delayed and Cancelled: nobody wants an email every time a
+        // flight moves to Boarding or Landed, and the spec asks for a
+        // status/reminder notification, not a running commentary
+        if (dto.Status is "Delayed" or "Cancelled")
+            await _email.SendFlightStatusAsync(id, dto.Status);
 
         return Ok(await ToDto(_context.Flights.Where(f => f.Id == id)).FirstAsync());
     }
