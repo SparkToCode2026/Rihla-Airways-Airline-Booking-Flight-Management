@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Bookings/:id
+url: "{{baseUrl}}/api/Bookings/:id"
+method: GET
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Bookings-id-2.resources/examples
+order: 4000

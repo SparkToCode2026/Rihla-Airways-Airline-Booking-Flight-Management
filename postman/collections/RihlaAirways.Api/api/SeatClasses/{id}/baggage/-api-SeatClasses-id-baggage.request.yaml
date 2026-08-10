@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/SeatClasses/:id/baggage
+url: "{{baseUrl}}/api/SeatClasses/:id/baggage"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "baggageAllowanceKg": 7444
+    }
+settings: {}
+examples: ./.resources/-api-SeatClasses-id-baggage.resources/examples
+order: 1000

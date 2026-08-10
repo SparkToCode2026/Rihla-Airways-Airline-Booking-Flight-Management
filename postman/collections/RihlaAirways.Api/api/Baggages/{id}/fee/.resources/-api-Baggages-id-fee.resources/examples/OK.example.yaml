@@ -1,0 +1,21 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Baggages/:id/fee"
+  method: PATCH
+  headers:
+    Content-Type: application/json
+  pathVariables:
+    id: "4087"
+  body:
+    type: json
+    content: |-
+      {
+        "fee": 1867.8459945849556
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

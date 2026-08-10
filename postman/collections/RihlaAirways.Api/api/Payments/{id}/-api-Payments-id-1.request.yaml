@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Payments/:id
+url: "{{baseUrl}}/api/Payments/:id"
+method: DELETE
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Payments-id-1.resources/examples
+order: 3000

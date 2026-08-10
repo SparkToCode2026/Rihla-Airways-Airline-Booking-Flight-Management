@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Flights/:id/status
+url: "{{baseUrl}}/api/Flights/:id/status"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "status": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Flights-id-status.resources/examples
+order: 1000

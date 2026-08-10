@@ -1,0 +1,18 @@
+$kind: http-request
+name: /api/Payments/:id
+url: "{{baseUrl}}/api/Payments/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "amount": 4405.374791892101,
+      "method": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Payments-id.resources/examples
+order: 2000

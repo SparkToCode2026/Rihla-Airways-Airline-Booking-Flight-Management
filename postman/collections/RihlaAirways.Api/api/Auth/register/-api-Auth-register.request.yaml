@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Auth/register
+url: "{{baseUrl}}/api/Auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "email": "string",
+      "password": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Auth-register.resources/examples
+order: 1000

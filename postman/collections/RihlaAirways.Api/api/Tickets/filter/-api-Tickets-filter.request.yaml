@@ -1,0 +1,13 @@
+$kind: http-request
+name: /api/Tickets/filter
+url: "{{baseUrl}}/api/Tickets/filter?flightId=4087&seatClassId=4087&minPrice=6442.0692054369165&passengerName=string&destinationCode=string"
+method: GET
+queryParams:
+  flightId: "4087"
+  seatClassId: "4087"
+  minPrice: "6442.0692054369165"
+  passengerName: string
+  destinationCode: string
+settings: {}
+examples: ./.resources/-api-Tickets-filter.resources/examples
+order: 1000

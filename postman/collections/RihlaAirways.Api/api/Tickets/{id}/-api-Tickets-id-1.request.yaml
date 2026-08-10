@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Tickets/:id
+url: "{{baseUrl}}/api/Tickets/:id"
+method: DELETE
+pathVariables:
+  id: "4087"
+settings: {}
+examples: ./.resources/-api-Tickets-id-1.resources/examples
+order: 3000

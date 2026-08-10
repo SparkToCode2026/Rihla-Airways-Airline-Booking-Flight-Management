@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Tickets
+url: "{{baseUrl}}/api/Tickets"
+method: GET
+settings: {}
+examples: ./.resources/-api-Tickets-1.resources/examples
+order: 5000

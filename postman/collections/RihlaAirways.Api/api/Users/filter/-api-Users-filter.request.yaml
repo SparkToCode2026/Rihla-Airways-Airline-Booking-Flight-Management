@@ -1,0 +1,11 @@
+$kind: http-request
+name: /api/Users/filter
+url: "{{baseUrl}}/api/Users/filter?role=string&email=string&registeredAfter=2026-04-27T01:55:28.288Z"
+method: GET
+queryParams:
+  role: string
+  email: string
+  registeredAfter: 2026-04-27T01:55:28.288Z
+settings: {}
+examples: ./.resources/-api-Users-filter.resources/examples
+order: 1000

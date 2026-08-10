@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Tickets/:id/seat
+url: "{{baseUrl}}/api/Tickets/:id/seat"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "seatNumber": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Tickets-id-seat.resources/examples
+order: 1000

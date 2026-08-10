@@ -1,0 +1,18 @@
+$kind: http-request
+name: /api/Users/:id
+url: "{{baseUrl}}/api/Users/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "email": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Users-id.resources/examples
+order: 2000

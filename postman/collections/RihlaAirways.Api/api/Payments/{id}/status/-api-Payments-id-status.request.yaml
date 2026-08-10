@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Payments/:id/status
+url: "{{baseUrl}}/api/Payments/:id/status"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "status": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Payments-id-status.resources/examples
+order: 1000

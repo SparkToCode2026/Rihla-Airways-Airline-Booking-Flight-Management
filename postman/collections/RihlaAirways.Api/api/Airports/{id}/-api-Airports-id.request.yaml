@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/Airports/:id
+url: "{{baseUrl}}/api/Airports/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "code": "string",
+      "name": "string",
+      "city": "string",
+      "country": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Airports-id.resources/examples
+order: 2000

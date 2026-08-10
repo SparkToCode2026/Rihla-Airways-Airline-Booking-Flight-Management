@@ -36,7 +36,11 @@ public class BaggagesController : ControllerBase
 
     // --- output DTO ---
     // ThenInclude(t => t.Booking) reached Booking -> User -> PasswordHash,
-    // three hops from a baggage tag, on an anonymous endpoint
+    // three hops from a baggage tag, on an anonymous endpoint.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .WeightKg back to a column through the
+    // constructor. sort the entities first
     public record BaggageResponseDto(
         int Id, int TicketId, int BaggageNumber, string BagTag,
         decimal WeightKg, string Type, decimal Fee,
@@ -203,7 +207,9 @@ public class BaggagesController : ControllerBase
         // and note we do NOT renumber the remaining bags: deleting bag 2 of
         // 3 leaves 1 and 3. that's correct for a weak entity - the partial
         // key identifies the bag, it isn't a display index, and renumbering
-        // would change the identity of a bag already tagged and loaded
+        // would change the identity of a bag already tagged and loaded.
+        // it also means the next bag added gets number 4, since Create uses
+        // MAX + 1 rather than COUNT + 1 - deliberate, COUNT would reuse 3
         _context.Baggages.Remove(baggage);
         await _context.SaveChangesAsync();
         return NoContent();
@@ -215,8 +221,12 @@ public class BaggagesController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Baggages)
-            .OrderBy(b => b.TicketId).ThenBy(b => b.BaggageNumber)
+        // OrderBy moved INSIDE the ToDto call, onto the entities - chained
+        // onto the result it compiles and throws at runtime. new fix
+        return Ok(await ToDto(
+            _context.Baggages
+                .OrderBy(b => b.TicketId)
+                .ThenBy(b => b.BaggageNumber))
             .ToListAsync());
     }
 
@@ -270,7 +280,8 @@ public class BaggagesController : ControllerBase
         if (overweightOnly == true)
             query = query.Where(b => b.WeightKg > b.Ticket.SeatClass.BaggageAllowanceKg);
 
-        return Ok(await ToDto(query).OrderByDescending(b => b.WeightKg).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderByDescending(b => b.WeightKg)).ToListAsync());
     }
 
 
@@ -279,6 +290,8 @@ public class BaggagesController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byType = await _context.Baggages
             .GroupBy(b => b.Type)
             .Select(g => new
@@ -308,6 +321,8 @@ public class BaggagesController : ControllerBase
             .OrderByDescending(s => s.TotalWeightKg)
             .ToListAsync();
 
+        // Sum on an empty table is 0, so this one is safe unguarded -
+        // unlike Average or Max, which throw
         var revenue = await _context.Baggages.SumAsync(b => b.Fee);
 
         return Ok(new

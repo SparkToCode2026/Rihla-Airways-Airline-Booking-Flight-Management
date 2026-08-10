@@ -1,0 +1,18 @@
+$kind: http-request
+name: /api/Airports
+url: "{{baseUrl}}/api/Airports"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "string",
+      "name": "string",
+      "city": "string",
+      "country": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Airports.resources/examples
+order: 4000

@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/PassengerProfiles/:id/phone
+url: "{{baseUrl}}/api/PassengerProfiles/:id/phone"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "phoneNumber": "string"
+    }
+settings: {}
+examples: ./.resources/-api-PassengerProfiles-id-phone.resources/examples
+order: 1000

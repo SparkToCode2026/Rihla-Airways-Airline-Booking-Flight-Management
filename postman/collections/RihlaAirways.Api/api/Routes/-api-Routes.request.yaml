@@ -1,0 +1,18 @@
+$kind: http-request
+name: /api/Routes
+url: "{{baseUrl}}/api/Routes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "originAirportId": 1625,
+      "destinationAirportId": 298,
+      "distanceKm": 5231,
+      "estimatedDurationMin": 9498
+    }
+settings: {}
+examples: ./.resources/-api-Routes.resources/examples
+order: 4000

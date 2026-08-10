@@ -1,0 +1,17 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Airports/filter?country=string&city=string&code=string&search=string&connectedOnly=true"
+  method: GET
+  queryParams:
+    country: string
+    city: string
+    code: string
+    search: string
+    connectedOnly: "true"
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

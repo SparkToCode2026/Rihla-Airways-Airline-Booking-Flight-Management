@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/Bookings
+url: "{{baseUrl}}/api/Bookings"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": 4376
+    }
+settings: {}
+examples: ./.resources/-api-Bookings.resources/examples
+order: 4000

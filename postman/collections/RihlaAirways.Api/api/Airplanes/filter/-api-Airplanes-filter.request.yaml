@@ -1,0 +1,14 @@
+$kind: http-request
+name: /api/Airplanes/filter
+url: "{{baseUrl}}/api/Airplanes/filter?model=string&minYear=4087&maxYear=4087&minCapacity=4087&idleOnly=true&freeOn=2026-04-27T01:55:28.288Z"
+method: GET
+queryParams:
+  model: string
+  minYear: "4087"
+  maxYear: "4087"
+  minCapacity: "4087"
+  idleOnly: "true"
+  freeOn: 2026-04-27T01:55:28.288Z
+settings: {}
+examples: ./.resources/-api-Airplanes-filter.resources/examples
+order: 1000

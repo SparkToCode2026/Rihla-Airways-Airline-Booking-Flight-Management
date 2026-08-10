@@ -1,0 +1,19 @@
+$kind: http-request
+name: /api/Tickets
+url: "{{baseUrl}}/api/Tickets"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "bookingId": 8100,
+      "flightId": 4041,
+      "seatClassId": 4798,
+      "seatNumber": "string",
+      "passengerName": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Tickets.resources/examples
+order: 4000

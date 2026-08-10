@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/Baggages
+url: "{{baseUrl}}/api/Baggages"
+method: GET
+settings: {}
+examples: ./.resources/-api-Baggages-1.resources/examples
+order: 5000

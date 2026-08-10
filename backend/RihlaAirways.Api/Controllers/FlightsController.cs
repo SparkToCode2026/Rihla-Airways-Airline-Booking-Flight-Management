@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using RihlaAirways.Api.Data;
 using RihlaAirways.Api.Models;
-
+using RihlaAirways.Api.Services;
 namespace RihlaAirways.Api.Controllers;
 
 [ApiController]
@@ -12,10 +12,13 @@ namespace RihlaAirways.Api.Controllers;
 public class FlightsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IEmailService _email;
 
-    public FlightsController(AppDbContext context) => _context = context;
-
-    // --- input DTOs ---
+    public FlightsController(AppDbContext context, IEmailService email)
+    {
+        _context = context;
+        _email = email;
+    }    // --- input DTOs ---
     // no Status on create - a flight always starts Scheduled and moves
     // through the state machine below
     public record FlightCreateDto(
@@ -39,7 +42,11 @@ public class FlightsController : ControllerBase
     // the original returned entities with Tickets AND FlightCrews included.
     // for 100 flights with 100 tickets each that's 10,000 nested rows in one
     // response, plus the json cycle crash, plus every passenger name on an
-    // anonymous endpoint. counts are what the list view actually needs
+    // anonymous endpoint. counts are what the list view actually needs.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .DepartureTime back to a column once the values
+    // are inside the constructor. sort (and page) the entities first
     public record FlightResponseDto(
         int Id, string FlightNumber, string Status,
         DateTime DepartureTime, DateTime ArrivalTime, int DurationMin,
@@ -216,12 +223,14 @@ public class FlightsController : ControllerBase
         flight.Status = dto.Status;
         await _context.SaveChangesAsync();
 
-        // the spec's second email trigger lives here - flight status /
-        // reminder notifications. leaving the hook so nobody has to hunt
-        // for the right place in week 2
-        // TODO week 2: if Delayed or Cancelled ->
-        //   _emailService.SendFlightStatusAsync(id, dto.Status) for every
-        //   passenger holding a ticket on this flight
+        // the spec's second email trigger. one status change fans out to
+        // every passenger holding a ticket on this flight - the service
+        // handles the Flight -> Tickets -> Booking -> User chain.
+        // only Delayed and Cancelled: nobody wants an email every time a
+        // flight moves to Boarding or Landed, and the spec asks for a
+        // status/reminder notification, not a running commentary
+        if (dto.Status is "Delayed" or "Cancelled")
+            await _email.SendFlightStatusAsync(id, dto.Status);
 
         return Ok(await ToDto(_context.Flights.Where(f => f.Id == id)).FirstAsync());
     }
@@ -265,10 +274,18 @@ public class FlightsController : ControllerBase
         if (page < 1) page = 1;
 
         var total = await _context.Flights.CountAsync();
-        var items = await ToDto(_context.Flights)
-            .OrderBy(f => f.DepartureTime)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+
+        // the ORDER and the PAGING both happen on the entities, before the
+        // projection. it used to be ToDto(...).OrderBy(f => f.DepartureTime)
+        // .Skip().Take(), which compiles and then throws at runtime - EF Core
+        // can't see .DepartureTime through the record constructor.
+        // and Skip/Take without an OrderBy is undefined ordering in SQL
+        // anyway, so page 2 could repeat rows from page 1. new fix
+        var items = await ToDto(
+            _context.Flights
+                .OrderBy(f => f.DepartureTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize))
             .ToListAsync();
 
         return Ok(new { Total = total, Page = page, PageSize = pageSize, Items = items });
@@ -322,7 +339,8 @@ public class FlightsController : ControllerBase
             query = query.Where(f => f.Tickets.Count < f.Airplane.Capacity
                                   && f.Status == "Scheduled");
 
-        return Ok(await ToDto(query).OrderBy(f => f.DepartureTime).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(f => f.DepartureTime)).ToListAsync());
     }
 
 
@@ -331,6 +349,8 @@ public class FlightsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byStatus = await _context.Flights
             .GroupBy(f => f.Status)
             .Select(g => new

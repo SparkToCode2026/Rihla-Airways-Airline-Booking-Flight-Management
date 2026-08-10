@@ -1,0 +1,14 @@
+$kind: http-request
+name: /api/Flights/filter
+url: "{{baseUrl}}/api/Flights/filter?status=string&fromDate=2026-04-27T01:55:28.288Z&toDate=2026-04-27T01:55:28.288Z&originCode=string&destinationCode=string&availableOnly=true"
+method: GET
+queryParams:
+  status: string
+  fromDate: 2026-04-27T01:55:28.288Z
+  toDate: 2026-04-27T01:55:28.288Z
+  originCode: string
+  destinationCode: string
+  availableOnly: "true"
+settings: {}
+examples: ./.resources/-api-Flights-filter.resources/examples
+order: 1000

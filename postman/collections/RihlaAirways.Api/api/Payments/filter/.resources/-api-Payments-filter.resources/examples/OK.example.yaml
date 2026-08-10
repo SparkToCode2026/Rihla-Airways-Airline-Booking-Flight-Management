@@ -1,0 +1,17 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/Payments/filter?status=string&method=string&minAmount=6442.0692054369165&fromDate=2026-04-27T01:55:28.288Z&toDate=2026-04-27T01:55:28.288Z"
+  method: GET
+  queryParams:
+    status: string
+    method: string
+    minAmount: "6442.0692054369165"
+    fromDate: 2026-04-27T01:55:28.288Z
+    toDate: 2026-04-27T01:55:28.288Z
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

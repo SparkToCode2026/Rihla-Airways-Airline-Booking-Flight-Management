@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/PassengerProfiles/:id
+url: "{{baseUrl}}/api/PassengerProfiles/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "passportNumber": "string",
+      "nationality": "string",
+      "dateOfBirth": "2011-03-20",
+      "phoneNumber": "string"
+    }
+settings: {}
+examples: ./.resources/-api-PassengerProfiles-id.resources/examples
+order: 2000

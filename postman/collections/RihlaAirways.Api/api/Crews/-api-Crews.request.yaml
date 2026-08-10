@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/Crews
+url: "{{baseUrl}}/api/Crews"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "role": "string",
+      "licenseNumber": "string",
+      "passportNumber": "string",
+      "nationality": "string",
+      "dateOfBirth": "1969-08-18"
+    }
+settings: {}
+examples: ./.resources/-api-Crews.resources/examples
+order: 4000

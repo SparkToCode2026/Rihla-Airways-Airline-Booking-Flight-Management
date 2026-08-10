@@ -51,7 +51,12 @@ public class TicketsController : ControllerBase
     // Flight has no direct Airport FK, so origin/destination come through
     // Flight -> Route -> OriginAirport. with Include() that's a
     // .ThenInclude() chain; in a Select it's just dotted access and EF Core
-    // turns the whole thing into one JOIN
+    // turns the whole thing into one JOIN.
+    //
+    // never chain .OrderBy() onto the RESULT of this - the dto is a
+    // positional record, so once the values are inside a constructor call
+    // EF Core can't map .DepartureTime back to a column and the query
+    // fails at runtime. sort the entities first, then project
     private static readonly Func<IQueryable<Ticket>, IQueryable<TicketResponseDto>> ToDto =
         q => q.Select(t => new TicketResponseDto(
             t.Id, t.BookingId, t.FlightId,
@@ -86,12 +91,17 @@ public class TicketsController : ControllerBase
         var seatClass = await _context.SeatClasses.FindAsync(dto.SeatClassId);
         if (seatClass == null) return BadRequest($"SeatClass {dto.SeatClassId} not found.");
 
+        var seat = dto.SeatNumber.ToUpper();   // 14c and 14C are the same seat
+
         // 2) the composite unique index (FlightId, SeatNumber). this is the
         // one we added specifically to stop double-selling a seat - catching
-        // it here turns a 500 into a message that says what went wrong
+        // it here turns a 500 into a message that says what went wrong.
+        // note we compare the UPPERCASED seat, not the raw dto value -
+        // otherwise posting "14c" would slip past this check and then still
+        // collide at the database once we normalise it below. new fix
         if (await _context.Tickets.AnyAsync(t =>
-                t.FlightId == dto.FlightId && t.SeatNumber == dto.SeatNumber))
-            return Conflict($"Seat {dto.SeatNumber} is already taken on flight {flight.FlightNumber}.");
+                t.FlightId == dto.FlightId && t.SeatNumber == seat))
+            return Conflict($"Seat {seat} is already taken on flight {flight.FlightNumber}.");
 
         // 3) capacity. no db constraint covers this one - Airplane.Capacity
         // is just an int, nothing stops us selling 200 seats on a 180-seater
@@ -106,16 +116,19 @@ public class TicketsController : ControllerBase
         // price is CALCULATED, not accepted from the request. the original
         // took Price straight off the dto, which let the client post
         // Price = 0 - and made SeatClass.PriceMultiplier pointless.
-        // base fare from route distance, then the class multiplier
-        var basePrice = CalculateBaseFare(flight.RouteId);
-        var price = Math.Round(await basePrice * seatClass.PriceMultiplier, 2);
+        // base fare from route distance, then the class multiplier.
+        // awaited on its own line - the old version was
+        // "await basePrice * multiplier" on one line, which happens to work
+        // because await binds tighter than *, but reads like a bug
+        var basePrice = await CalculateBaseFare(flight.RouteId);
+        var price = Math.Round(basePrice * seatClass.PriceMultiplier, 2);
 
         var ticket = new Ticket
         {
             BookingId = dto.BookingId,
             FlightId = dto.FlightId,
             SeatClassId = dto.SeatClassId,
-            SeatNumber = dto.SeatNumber.ToUpper(),   // 14c and 14C are the same seat
+            SeatNumber = seat,
             Price = price,
             PassengerName = dto.PassengerName
         };
@@ -124,7 +137,8 @@ public class TicketsController : ControllerBase
 
         // keep the booking total in step. TotalAmount is denormalized on
         // purpose (frozen at purchase) but it still has to be right at the
-        // moment we write it
+        // moment we write it. this controller is the ONLY writer of that
+        // field - BookingsController just recalculates from the tickets
         booking.TotalAmount += price;
 
         await _context.SaveChangesAsync();
@@ -155,12 +169,12 @@ public class TicketsController : ControllerBase
             return Conflict($"Seat {seat} is already taken on this flight.");
 
         // changing seat class changes the price, so recalculate and adjust
-        // the booking total by the difference
+        // the booking total by the DIFFERENCE, not the full amount
         if (dto.SeatClassId != ticket.SeatClassId)
         {
             var flight = await _context.Flights.FindAsync(ticket.FlightId);
-            var newPrice = Math.Round(
-                await CalculateBaseFare(flight!.RouteId) * seatClass.PriceMultiplier, 2);
+            var basePrice = await CalculateBaseFare(flight!.RouteId);
+            var newPrice = Math.Round(basePrice * seatClass.PriceMultiplier, 2);
 
             var booking = await _context.Bookings.FindAsync(ticket.BookingId);
             if (booking != null) booking.TotalAmount += newPrice - ticket.Price;
@@ -226,7 +240,13 @@ public class TicketsController : ControllerBase
                   // and seat on every flight in the system
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Tickets).ToListAsync());
+        // OrderBy sits INSIDE the ToDto call, on the entities - chaining it
+        // onto the result would throw at runtime, see the note on ToDto
+        return Ok(await ToDto(
+            _context.Tickets
+                .OrderBy(t => t.Flight.DepartureTime)
+                .ThenBy(t => t.SeatNumber))
+            .ToListAsync());
     }
 
 
@@ -272,7 +292,7 @@ public class TicketsController : ControllerBase
             query = query.Where(t =>
                 t.Flight.Route.DestinationAirport.Code == destinationCode.ToUpper());
 
-        return Ok(await ToDto(query).ToListAsync());
+        return Ok(await ToDto(query.OrderBy(t => t.Flight.DepartureTime)).ToListAsync());
     }
 
 
@@ -281,6 +301,9 @@ public class TicketsController : ControllerBase
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
+        // this one CAN order after the Select - anonymous types (new { ... })
+        // keep their property names visible to EF Core, unlike positional
+        // records where the values vanish into a constructor call
         var stats = await _context.Tickets
             .GroupBy(t => new { t.FlightId, t.Flight.FlightNumber })
             .Select(g => new

@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/PassengerProfiles
+url: "{{baseUrl}}/api/PassengerProfiles"
+method: GET
+settings: {}
+examples: ./.resources/-api-PassengerProfiles-1.resources/examples
+order: 5000

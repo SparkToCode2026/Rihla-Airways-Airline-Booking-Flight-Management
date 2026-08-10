@@ -47,7 +47,13 @@ public class UsersController : ControllerBase
         string? PassportNumber, int BookingCount);
 
     // one place that defines what a User looks like on the way out -
-    // beats repeating the same Select in five endpoints
+    // beats repeating the same Select in five endpoints.
+    //
+    // IMPORTANT for anyone reusing this pattern: never chain .OrderBy() onto
+    // the RESULT of this. the dto is a positional record, so once the values
+    // are inside a constructor call EF Core can't map .Name back to a column
+    // and the query fails at runtime with "could not be translated".
+    // sort the entities first, then project - see GetAll below
     private static readonly Func<IQueryable<User>, IQueryable<UserResponseDto>> ToDto =
         q => q.Select(u => new UserResponseDto(
             u.Id, u.Name, u.Email, u.Role, u.CreatedAt,
@@ -80,9 +86,12 @@ public class UsersController : ControllerBase
             // the client sends a PLAIN password and we hash it here.
             // taking a pre-made hash from the request body would mean
             // trusting the caller to hash correctly, which defeats the point.
-            // swap this for BCrypt when we add the auth package - flagged
-            // so nobody forgets it's a placeholder
-            PasswordHash = HashPassword(dto.Password),
+            // BCrypt, same as AuthController - this used to be a sha256
+            // placeholder while we waited on the auth package. if it had
+            // stayed, any account an admin created here could never log in,
+            // because BCrypt.Verify can't validate a sha256 hash. silent
+            // failure, very annoying to trace - new fix
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = dto.Role,
             CreatedAt = DateTime.UtcNow
         };
@@ -140,6 +149,10 @@ public class UsersController : ControllerBase
         user.Role = dto.Role;
         await _context.SaveChangesAsync();
 
+        // worth knowing: this does NOT affect anyone already holding a token.
+        // jwt claims are baked in at signing time, so a demoted admin keeps
+        // admin rights until their current token expires. that's the tradeoff
+        // of stateless auth - the server never re-checks the db per request
         return Ok(new UserResponseDto(user.Id, user.Name, user.Email,
                                       user.Role, user.CreatedAt, null, 0));
     }
@@ -176,8 +189,13 @@ public class UsersController : ControllerBase
         // the Select in ToDto does the job Include() was doing, but better:
         // EF Core translates it into a single SQL query that pulls ONLY the
         // columns we need, instead of loading every booking row into memory
-        // just to count them
-        return Ok(await ToDto(_context.Users).ToListAsync());
+        // just to count them.
+        //
+        // note the OrderBy sits INSIDE the ToDto call, on the entities.
+        // chaining .OrderBy(u => u.Name) onto the result would compile fine
+        // and then throw at runtime - EF Core can't map a property back
+        // through a positional record's constructor. new fix
+        return Ok(await ToDto(_context.Users.OrderBy(u => u.Name)).ToListAsync());
     }
 
 
@@ -217,7 +235,8 @@ public class UsersController : ControllerBase
         if (registeredAfter.HasValue)
             query = query.Where(u => u.CreatedAt >= registeredAfter.Value);
 
-        return Ok(await ToDto(query).ToListAsync());
+        // same rule as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(u => u.Name)).ToListAsync());
     }
 
 
@@ -226,6 +245,10 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetStats()
     {
+        // note this one CAN order after the Select - anonymous types
+        // (new { ... }) keep their property names visible to EF Core, unlike
+        // positional records where the values disappear into a constructor.
+        // that difference is the whole reason ToDto needs the other treatment
         var stats = await _context.Users
             .GroupBy(u => u.Role)
             .Select(g => new
@@ -242,16 +265,5 @@ public class UsersController : ControllerBase
             .ToListAsync();
 
         return Ok(stats);
-    }
-
-
-    // temporary - gets replaced by BCrypt.Net-Next when we do the JWT step.
-    // sha256 with no salt is NOT acceptable for real passwords, it's here
-    // only so the endpoint works before the auth package lands
-    private static string HashPassword(string password)
-    {
-        var bytes = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(bytes);
     }
 }

@@ -1,0 +1,7 @@
+$kind: http-request
+name: /api/FlightCrews
+url: "{{baseUrl}}/api/FlightCrews"
+method: GET
+settings: {}
+examples: ./.resources/-api-FlightCrews-1.resources/examples
+order: 5000

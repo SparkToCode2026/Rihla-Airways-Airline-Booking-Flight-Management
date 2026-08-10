@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Airports/:id/city
+url: "{{baseUrl}}/api/Airports/:id/city"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "city": "string"
+    }
+settings: {}
+examples: ./.resources/-api-Airports-id-city.resources/examples
+order: 1000

@@ -1,0 +1,19 @@
+$kind: http-request
+name: /api/PassengerProfiles
+url: "{{baseUrl}}/api/PassengerProfiles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": 9379,
+      "passportNumber": "string",
+      "nationality": "string",
+      "dateOfBirth": "1984-08-28",
+      "phoneNumber": "string"
+    }
+settings: {}
+examples: ./.resources/-api-PassengerProfiles.resources/examples
+order: 4000

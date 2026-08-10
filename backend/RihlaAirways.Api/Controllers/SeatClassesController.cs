@@ -41,6 +41,11 @@ public class SeatClassesController : ControllerBase
         int Id, string Name, decimal PriceMultiplier,
         int BaggageAllowanceKg, int TicketCount);
 
+    // never chain .OrderBy() onto the RESULT of this. it's a positional
+    // record, so once the values are inside a constructor call EF Core
+    // can't map .PriceMultiplier back to a column and the query dies at
+    // runtime with "could not be translated" - compiles fine either way.
+    // sort the entities first, then project
     private static readonly Func<IQueryable<SeatClass>, IQueryable<SeatClassResponseDto>> ToDto =
         q => q.Select(s => new SeatClassResponseDto(
             s.Id, s.Name, s.PriceMultiplier, s.BaggageAllowanceKg, s.Tickets.Count));
@@ -114,6 +119,9 @@ public class SeatClassesController : ControllerBase
         seatClass.BaggageAllowanceKg = dto.BaggageAllowanceKg;
         await _context.SaveChangesAsync();
 
+        // note this does NOT recalculate fees on baggage already checked in -
+        // Baggage.Fee is frozen at check-in for the same reason Ticket.Price
+        // is frozen at purchase
         return Ok(await ToDto(_context.SeatClasses.Where(s => s.Id == id)).FirstAsync());
     }
 
@@ -146,8 +154,12 @@ public class SeatClassesController : ControllerBase
                        // customers do need to browse fare classes
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.SeatClasses)
-            .OrderBy(s => s.PriceMultiplier)
+        // OrderBy moved INSIDE the ToDto call, onto the entities. it used to
+        // be chained onto the result, which compiles but throws at runtime -
+        // EF Core can't see through the record constructor to find the
+        // column. new fix
+        return Ok(await ToDto(
+            _context.SeatClasses.OrderBy(s => s.PriceMultiplier))
             .ToListAsync());
     }
 
@@ -188,7 +200,8 @@ public class SeatClassesController : ControllerBase
         if (minBaggageKg.HasValue)
             query = query.Where(s => s.BaggageAllowanceKg >= minBaggageKg.Value);
 
-        return Ok(await ToDto(query).OrderBy(s => s.PriceMultiplier).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(s => s.PriceMultiplier)).ToListAsync());
     }
 
 
@@ -203,7 +216,11 @@ public class SeatClassesController : ControllerBase
         // Economy, Business and First all reported an identical "average".
         // it's a global constant pretending to be a per-row stat, and it may
         // not even translate to SQL since it reaches back into the context
-        // mid-query. new fix - real per-class aggregates below
+        // mid-query. new fix - real per-class aggregates below.
+        //
+        // note this OrderBy is fine AFTER the Select, unlike ToDto above -
+        // anonymous types (new { ... }) keep their property names visible
+        // to EF Core, positional records don't
         var stats = await _context.SeatClasses
             .Select(s => new
             {

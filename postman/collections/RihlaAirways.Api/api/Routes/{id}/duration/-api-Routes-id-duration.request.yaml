@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/Routes/:id/duration
+url: "{{baseUrl}}/api/Routes/:id/duration"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "4087"
+body:
+  type: json
+  content: |-
+    {
+      "estimatedDurationMin": 8607
+    }
+settings: {}
+examples: ./.resources/-api-Routes-id-duration.resources/examples
+order: 1000

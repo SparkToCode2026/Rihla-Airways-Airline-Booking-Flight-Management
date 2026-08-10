@@ -57,7 +57,11 @@ public class PassengerProfilesController : ControllerBase
     // column for EF Core to translate. so we do the date maths inline
     // against DateOfBirth, which IS a real column.
     // this is the exact trap I mentioned earlier: p.Age in a Where or a
-    // Select compiles fine and then throws at runtime
+    // Select compiles fine and then throws at runtime.
+    //
+    // and never chain .OrderBy() onto the RESULT of this either - positional
+    // record, same problem. note the property differs between the two sides:
+    // UserName on the dto is User.Name on the entity
     private static readonly Func<IQueryable<PassengerProfile>, IQueryable<ProfileSummaryDto>> ToSummary =
         q => q.Select(p => new ProfileSummaryDto(
             p.Id, p.UserId, p.User.Name,
@@ -122,6 +126,9 @@ public class PassengerProfilesController : ControllerBase
         _context.PassengerProfiles.Add(profile);
         await _context.SaveChangesAsync();
 
+        // profile.Age is fine HERE - this is a loaded C# object, not a
+        // query being translated to SQL. the [NotMapped] property only
+        // breaks inside a Where or a Select that EF Core has to translate
         return CreatedAtAction(nameof(GetById), new { id = profile.Id },
             new ProfileDetailDto(profile.Id, user.Id, user.Name, user.Email,
                 profile.PassportNumber, profile.Nationality,
@@ -199,9 +206,13 @@ public class PassengerProfilesController : ControllerBase
         // Include(p => p.User). that meant anyone could pull every passport
         // number, date of birth, phone number, email and password hash in
         // the system with one unauthenticated GET.
-        // now: staff-only, and the SUMMARY shape - masked passport, no DOB
-        return Ok(await ToSummary(_context.PassengerProfiles)
-            .OrderBy(p => p.UserName)
+        // now: staff-only, and the SUMMARY shape - masked passport, no DOB.
+        //
+        // OrderBy moved INSIDE the ToSummary call. it was .OrderBy(p =>
+        // p.UserName) on the result, which compiles and throws at runtime -
+        // and note the entity path is p.User.Name, not p.UserName. new fix
+        return Ok(await ToSummary(
+            _context.PassengerProfiles.OrderBy(p => p.User.Name))
             .ToListAsync());
     }
 
@@ -262,7 +273,8 @@ public class PassengerProfilesController : ControllerBase
         if (maxAge.HasValue)
             query = query.Where(p => p.DateOfBirth >= today.AddYears(-maxAge.Value - 1));
 
-        return Ok(await ToSummary(query).OrderBy(p => p.UserName).ToListAsync());
+        // same fix as GetAll - sort the entities on User.Name, then project
+        return Ok(await ToSummary(query.OrderBy(p => p.User.Name)).ToListAsync());
     }
 
 
@@ -273,6 +285,8 @@ public class PassengerProfilesController : ControllerBase
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byNationality = await _context.PassengerProfiles
             .GroupBy(p => p.Nationality)
             .Select(g => new

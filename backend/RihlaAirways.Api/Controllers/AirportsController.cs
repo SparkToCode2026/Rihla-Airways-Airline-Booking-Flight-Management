@@ -37,7 +37,12 @@ public class AirportsController : ControllerBase
     // the Includes were loading full Route rows just to render an airport
     // list. two counts is all the list view needs - and it's the only
     // place in the project where BOTH sides of the double-FK show up
-    // as separate numbers, which is a nice thing to point at in the demo
+    // as separate numbers, which is a nice thing to point at in the demo.
+    //
+    // never chain .OrderBy() onto the RESULT of this - positional record,
+    // so EF Core can't map .Country back to a column through the
+    // constructor. THIS is the one that threw the "could not be translated"
+    // error on GET /api/airports. sort the entities first
     public record AirportResponseDto(
         int Id, string Code, string Name, string City, string Country,
         int DepartingRouteCount, int ArrivingRouteCount, int UpcomingDepartures);
@@ -63,6 +68,12 @@ public class AirportsController : ControllerBase
     {
         var code = dto.Code.ToUpperInvariant();
 
+        // format check BEFORE the database round trip - no point querying
+        // for "1A!" when we're going to reject it anyway. these two were
+        // the other way round, which worked but wasted a query. new fix
+        if (!code.All(char.IsLetter))
+            return BadRequest("IATA code must be three letters.");
+
         // Airports.Code is a unique index - a duplicate throws
         // DbUpdateException instead of explaining itself.
         // the ToUpperInvariant above matters here: without it "mct" and
@@ -70,10 +81,6 @@ public class AirportsController : ControllerBase
         // and then collide at the database
         if (await _context.Airports.AnyAsync(a => a.Code == code))
             return Conflict($"Airport code {code} is already registered.");
-
-        // IATA codes are letters only - no digits, no punctuation
-        if (!code.All(char.IsLetter))
-            return BadRequest("IATA code must be three letters.");
 
         var airport = new Airport
         {
@@ -171,8 +178,15 @@ public class AirportsController : ControllerBase
                        // genuinely public. the DTO returns counts, not rows
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await ToDto(_context.Airports)
-            .OrderBy(a => a.Country).ThenBy(a => a.City)
+        // OrderBy moved INSIDE the ToDto call, onto the entities. this exact
+        // line was the first "could not be translated" failure we hit -
+        // ToDto(...).OrderBy(a => a.Country) compiles fine and then dies at
+        // runtime because EF Core can't see Country through the record
+        // constructor. new fix
+        return Ok(await ToDto(
+            _context.Airports
+                .OrderBy(a => a.Country)
+                .ThenBy(a => a.City))
             .ToListAsync());
     }
 
@@ -223,7 +237,8 @@ public class AirportsController : ControllerBase
         if (connectedOnly == true)
             query = query.Where(a => a.DepartingRoutes.Any() || a.ArrivingRoutes.Any());
 
-        return Ok(await ToDto(query).OrderBy(a => a.Code).ToListAsync());
+        // same fix as GetAll - sort the entities, then project
+        return Ok(await ToDto(query.OrderBy(a => a.Code)).ToListAsync());
     }
 
 
@@ -232,6 +247,8 @@ public class AirportsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetStats()
     {
+        // these OrderBys are safe after the Select - anonymous types keep
+        // their property names visible to EF Core, positional records don't
         var byCountry = await _context.Airports
             .GroupBy(a => a.Country)
             .Select(g => new
