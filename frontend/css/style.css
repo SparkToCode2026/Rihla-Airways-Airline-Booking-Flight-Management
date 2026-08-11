@@ -1,0 +1,102 @@
+/* ============================================================
+   overrides on top of bootstrap. we keep bootstrap's grid,
+   tables, forms and utilities - this file only changes the
+   PALETTE so the whole thing matches the figma dark theme.
+   
+   done with css variables rather than rewriting components,
+   so a <table class="table"> still works, it just comes out
+   dark instead of white
+   ============================================================ */
+
+:root {
+  --ra-bg:        #0a1420;   /* page background */
+  --ra-surface:   #0f1c2e;   /* cards, sidebar */
+  --ra-surface-2: #16273d;   /* table headers, hover */
+  --ra-border:    #1e3a52;
+  --ra-text:      #e8eef5;
+  --ra-muted:     #7d93ab;
+  --ra-accent:    #5eb3f6;   /* the figma blue */
+  --ra-accent-dk: #3a8fd4;
+}
+
+body {
+  background: var(--ra-bg);
+  color: var(--ra-text);
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+/* bootstrap's card is white by default - this is the one override
+   that does the most work, since almost everything sits in a card */
+.card {
+  background: var(--ra-surface);
+  border: 1px solid var(--ra-border);
+}
+
+.form-control, .form-select {
+  background: var(--ra-bg);
+  border: 1px solid var(--ra-border);
+  color: var(--ra-text);
+}
+
+/* :focus needs its own rule - bootstrap resets the background to
+   white on focus, which looks broken on a dark form */
+.form-control:focus, .form-select:focus {
+  background: var(--ra-bg);
+  border-color: var(--ra-accent);
+  color: var(--ra-text);
+  box-shadow: 0 0 0 .2rem rgba(94,179,246,.15);
+}
+
+.form-control::placeholder { color: var(--ra-muted); }
+
+.btn-primary {
+  background: var(--ra-accent);
+  border-color: var(--ra-accent);
+  color: #06121f;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: var(--ra-accent-dk);
+  border-color: var(--ra-accent-dk);
+  color: #06121f;
+}
+
+.table { --bs-table-color: var(--ra-text); }
+.table > thead {
+  background: var(--ra-surface-2);
+  text-transform: uppercase;
+  font-size: .75rem;
+  letter-spacing: .5px;
+  color: var(--ra-muted);
+}
+.table > tbody > tr { border-color: var(--ra-border); }
+.table > tbody > tr:hover { background: var(--ra-surface-2); }
+
+a { color: var(--ra-accent); text-decoration: none; }
+a:hover { color: var(--ra-accent-dk); }
+
+.text-muted { color: var(--ra-muted) !important; }
+
+/* the logo tile from the figma - blue rounded square with the
+   plane glyph. used on login and in the sidebar */
+.ra-logo {
+  width: 44px; height: 44px;
+  background: var(--ra-accent);
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #06121f;
+}
+
+/* login/register only - centres the card and caps its width */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+.auth-card { width: 100%; max-width: 420px; }
