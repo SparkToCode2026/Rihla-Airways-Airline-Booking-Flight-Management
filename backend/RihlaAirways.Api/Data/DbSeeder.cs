@@ -18,6 +18,13 @@ public static class DbSeeder
 
     public static async Task SeedAsync(AppDbContext db)
     {
+        // runs on EVERY startup, unlike the bulk seed below which only runs
+        // once on a fresh database. without this, a database that already
+        // has data (from an earlier run, before an Admin ever existed) would
+        // never get one - there's no self-service way to become Admin, by
+        // design, so something has to guarantee at least one exists
+        await EnsureAdminAsync(db);
+
         // guard - checking Airports specifically because it's the
         // first table we write. if anything exists we assume a previous run
         // finished and bail out. it means "dotnet run" is safe to
@@ -94,6 +101,9 @@ public static class DbSeeder
             new() { Name = "Hamed Al-Mahrouqi", Email = "hamed@example.om", PasswordHash = sharedHash, Role = "Passenger", CreatedAt = now.AddDays(-30) },
             new() { Name = "Zainab Al-Farsi",  Email = "zainab@example.om", PasswordHash = sharedHash, Role = "Passenger", CreatedAt = now.AddDays(-12) },
             new() { Name = "Ops Desk",         Email = "ops@rihla.om",      PasswordHash = sharedHash, Role = "Staff",     CreatedAt = now.AddDays(-90) }
+            // Admin isn't seeded here - EnsureAdminAsync above handles it on
+            // every startup, not just a fresh database, so it works whether
+            // this bulk seed runs or not
         };
         var existingEmails = await db.Users.Select(u => u.Email).ToListAsync();
         users = users.Where(u => !existingEmails.Contains(u.Email)).ToList();
@@ -382,6 +392,41 @@ public static class DbSeeder
             rosters.Add(new FlightCrew { FlightId = f.Id, CrewId = attendants[(i + 1) % attendants.Count].Id, DutyRole = "CabinCrew" });
         }
         db.FlightCrews.AddRange(rosters);
+
+        await db.SaveChangesAsync();
+    }
+
+    // guarantees at least one Admin login exists, on every startup - not just
+    // the first one. there is deliberately no self-service way to become
+    // Admin (self-registration always creates a Passenger, and only an
+    // existing Admin can create another Admin/Staff account through
+    // UsersController), which means a database that reached this point
+    // without one already existing would be stuck forever with no way in.
+    //
+    // if a "admin@rihla.om" row already exists - e.g. someone registered
+    // that email as a Passenger through the Register page before this ran -
+    // it gets promoted in place instead of creating a duplicate, since Email
+    // is a unique index and a second insert would throw
+    private static async Task EnsureAdminAsync(AppDbContext db)
+    {
+        if (await db.Users.AnyAsync(u => u.Role == "Admin")) return;
+
+        var existing = await db.Users.FirstOrDefaultAsync(u => u.Email == "admin@rihla.om");
+        if (existing != null)
+        {
+            existing.Role = "Admin";
+        }
+        else
+        {
+            db.Users.Add(new User
+            {
+                Name = "System Admin",
+                Email = "admin@rihla.om",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Rihla2026!"),
+                Role = "Admin",
+                CreatedAt = DateTime.UtcNow
+            });
+        }
 
         await db.SaveChangesAsync();
     }

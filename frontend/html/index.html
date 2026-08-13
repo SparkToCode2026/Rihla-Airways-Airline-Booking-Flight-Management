@@ -1089,7 +1089,12 @@ async function loadAirplanes(){
 
 async function loadCrew(){
   try {
-    // CrewsController -> "api/Crews", plural
+    // CrewsController -> "api/Crews", plural.
+    // GetAll returns CrewSummaryDto for Admin/Staff - { id, name, role,
+    // licenseNumber, nationality, totalAssignments, upcomingFlights }.
+    // passportNumber and dateOfBirth are not in this shape at all (the
+    // backend comment calls this out explicitly: "not masked, simply
+    // absent"), so rendering them here always showed undefined
     const data = await api.get("/crews");
     document.getElementById("crewTable").innerHTML = data.map(c => `
       <tr>
@@ -1097,16 +1102,16 @@ async function loadCrew(){
         <td><b>${escapeHtml(c.name)}</b></td>
         <td>${escapeHtml(c.role)}</td>
         <td>${escapeHtml(c.licenseNumber)}</td>
-        <td>${escapeHtml(c.passportNumber)}</td>
         <td>${escapeHtml(c.nationality)}</td>
-        <td>${c.dateOfBirth}</td>
+        <td>${c.totalAssignments}</td>
+        <td>${c.upcomingFlights}</td>
         <td>
-          <button class="btn-outline" onclick='editCrew(${JSON.stringify(c)})'>Edit</button>
+          <button class="btn-outline" onclick="editCrew(${c.id})">Edit</button>
           <button class="btn-outline-red" onclick="deleteCrew(${c.id})">Delete</button>
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 const USER_ROLES = ["Passenger","Staff","Admin"];
@@ -1132,7 +1137,7 @@ async function loadUsers(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 /* ============================================================
@@ -1581,15 +1586,23 @@ async function deleteAirplane(id){
   try { await api.del(`/airplanes/${id}`); loadAirplanes(); loadDashboard(); } catch(e){ showAlert(e.message); }
 }
 
-function editCrew(c){
-  document.getElementById("crewId").value = c.id;
-  document.getElementById("crewName").value = c.name;
-  document.getElementById("crewRole").value = c.role;
-  document.getElementById("licenseNumber").value = c.licenseNumber;
-  document.getElementById("crewPassport").value = c.passportNumber;
-  document.getElementById("crewNationality").value = c.nationality;
-  document.getElementById("crewDob").value = c.dateOfBirth;
-  window.scrollTo(0, 0);
+// takes an id, not the row object - the list only has the redacted summary
+// (no passport/DOB). GET /crews/{id} returns the full CrewDetailDto only for
+// Admin; Staff get the summary again, so passport/DOB stay blank for them -
+// matching that Crew editing is Admin-only on the backend regardless
+async function editCrew(id){
+  try {
+    const c = await api.get(`/crews/${id}`);
+    document.getElementById("crewId").value = c.id;
+    document.getElementById("crewName").value = c.name;
+    document.getElementById("crewRole").value = c.role;
+    document.getElementById("licenseNumber").value = c.licenseNumber;
+    document.getElementById("crewPassport").value = c.passportNumber || "";
+    document.getElementById("crewNationality").value = c.nationality;
+    document.getElementById("crewDob").value = c.dateOfBirth || "";
+    if (!c.passportNumber) showAlert("Only an Admin can edit crew records.", "warning");
+    window.scrollTo(0, 0);
+  } catch(err) { showAlert(err.message); }
 }
 async function deleteCrew(id){
   if(!confirm("Delete crew member?")) return;
