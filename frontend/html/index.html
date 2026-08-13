@@ -257,6 +257,34 @@
   .page{ display:none; }
   .page.active{ display:block; }
 
+  /* ---------- api.js emits Bootstrap-flavoured markup (showAlert / statusBadge) ----------
+     this page doesn't load Bootstrap, so those classes need a local definition
+     that matches the rest of the dark theme */
+  .alert{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding: 12px 16px; border-radius: var(--radius); margin-bottom: 18px;
+    font-size: 13.5px; font-weight: 600; border:1px solid transparent;
+  }
+  .alert-danger{ background: var(--red-bg); color: var(--red); border-color: rgba(248,113,113,0.3); }
+  .alert-warning{ background: var(--amber-bg); color: var(--amber); border-color: rgba(251,191,36,0.3); }
+  .alert-success{ background: var(--green-bg); color: var(--green); border-color: rgba(52,211,153,0.3); }
+  .alert-info{ background: var(--blue-bg); color: var(--accent); border-color: rgba(56,189,248,0.3); }
+  .btn-close{
+    background: transparent; border:none; color: inherit; opacity:.7; cursor:pointer;
+    font-size: 16px; line-height:1; padding:0 0 0 10px; flex-shrink:0;
+  }
+  .btn-close:hover{ opacity:1; }
+  .btn-close::before{ content: "\2715"; }
+
+  .badge.text-bg-success{ background: var(--green-bg); color: var(--green); }
+  .badge.text-bg-warning{ background: var(--amber-bg); color: var(--amber); }
+  .badge.text-bg-info{ background: var(--blue-bg); color: var(--accent); }
+  .badge.text-bg-primary{ background: var(--blue-bg); color: var(--accent); }
+  .badge.text-bg-danger{ background: var(--red-bg); color: var(--red); }
+  .badge.text-bg-secondary{ background: rgba(255,255,255,0.06); color: var(--text-dim); }
+
+  .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+
   @media (max-width: 1100px){
     .stat-grid{ grid-template-columns: repeat(2,1fr); }
     .two-col{ grid-template-columns: 1fr; }
@@ -304,10 +332,10 @@
 
     <div class="sidebar-footer">
       <div class="user-row">
-        <div class="avatar">A</div>
+        <div class="avatar" id="sidebarAvatar">?</div>
         <div class="user-info">
-          <div class="uname">Admin System</div>
-          <div class="urole">Admin</div>
+          <div class="uname" id="sidebarName">—</div>
+          <div class="urole" id="sidebarRole">—</div>
         </div>
       </div>
       <div class="collapse-btn" id="collapseBtn">
@@ -399,17 +427,8 @@
           <div class="form-group"><label>Airplane ID</label><input type="number" id="flightAirplaneId" class="form-control" required value="1"></div>
           <div class="form-group"><label>Departure</label><input type="datetime-local" id="departureTime" class="form-control" required value="2026-08-25T10:00"></div>
           <div class="form-group"><label>Arrival</label><input type="datetime-local" id="arrivalTime" class="form-control" required value="2026-08-25T11:35"></div>
-          <div class="form-group">
-            <label>Status</label>
-            <select id="flightStatus" class="form-control">
-              <option value="Scheduled">Scheduled</option>
-              <option value="Departed">Departed</option>
-              <option value="Landed">Landed</option>
-              <option value="Delayed">Delayed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
           <button type="submit" class="btn">Save Flight</button>
+          <div class="cell-dim" style="flex-basis:100%;">A new flight always starts <b>Scheduled</b>. Route can't be changed after creation. Use the Status action on a row to move a flight through Boarding → Departed → Landed, or to Delay/Cancel it.</div>
         </form>
       </div>
       <div class="table-card">
@@ -477,18 +496,9 @@
       </div>
       <div class="form-panel">
         <form id="bookingForm" class="form-grid">
-          <input type="hidden" id="bookingId">
           <div class="form-group"><label>User ID</label><input type="number" id="bookingUserId" class="form-control" required value="1"></div>
-          <div class="form-group"><label>Booking Date</label><input type="datetime-local" id="bookingDate" class="form-control" required value="2026-08-12T10:00"></div>
-          <div class="form-group">
-            <label>Status</label>
-            <select id="bookingStatus" class="form-control">
-              <option value="Pending">Pending</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-          <button type="submit" class="btn">Save Booking</button>
+          <button type="submit" class="btn">Create Booking</button>
+          <div class="cell-dim" style="flex-basis:100%;">A new booking always starts <b>Pending</b> with a total of 0 — add tickets to it, then use the row actions to confirm, cancel, or recalculate its total.</div>
         </form>
       </div>
       <div class="table-card">
@@ -512,7 +522,7 @@
           <input type="hidden" id="ticketId">
           <div class="form-group"><label>Booking ID</label><input type="number" id="ticketBookingId" class="form-control" required value="1"></div>
           <div class="form-group"><label>Flight ID</label><input type="number" id="ticketFlightId" class="form-control" required value="1"></div>
-          <div class="form-group"><label>Seat Class ID</label><input type="number" id="seatClassId" class="form-control" required value="1"></div>
+          <div class="form-group"><label>Seat Class ID</label><input type="number" id="ticketSeatClassId" class="form-control" required value="1"></div>
           <div class="form-group"><label>Seat Number</label><input type="text" id="seatNumber" class="form-control" required value="12A"></div>
           <div class="form-group"><label>Passenger Name</label><input type="text" id="passengerName" class="form-control" required value="Nasser Al-Kindi"></div>
           <button type="submit" class="btn">Save Ticket</button>
@@ -547,9 +557,10 @@
       </div>
       <div class="table-card">
         <table>
-          <thead><tr><th>ID</th><th>User ID</th><th>Passport</th><th>Nationality</th><th>DOB</th><th>Phone</th><th>Actions</th></tr></thead>
+          <thead><tr><th>ID</th><th>User</th><th>Passport (last 4)</th><th>Nationality</th><th>Age</th><th>Actions</th></tr></thead>
           <tbody id="passengersTable"></tbody>
         </table>
+        <div class="cell-dim" style="padding:12px 20px;">This list is redacted for Staff — full passport number, date of birth and phone number are only visible to the profile's owner or an Admin, and only appear once you click Edit on a profile you're allowed to open.</div>
       </div>
     </section>
 
@@ -563,10 +574,8 @@
       </div>
       <div class="form-panel">
         <form id="paymentForm" class="form-grid">
-          <input type="hidden" id="paymentId">
           <div class="form-group"><label>Booking ID</label><input type="number" id="paymentBookingId" class="form-control" required value="1"></div>
           <div class="form-group"><label>Amount</label><input type="number" step="0.01" id="paymentAmount" class="form-control" required value="89.20"></div>
-          <div class="form-group"><label>Payment Date</label><input type="datetime-local" id="paymentDate" class="form-control" required value="2026-08-12T10:15"></div>
           <div class="form-group">
             <label>Method</label>
             <select id="paymentMethod" class="form-control">
@@ -575,15 +584,8 @@
               <option value="BankTransfer">BankTransfer</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Status</label>
-            <select id="paymentStatus" class="form-control">
-              <option value="Completed">Completed</option>
-              <option value="Pending">Pending</option>
-              <option value="Failed">Failed</option>
-            </select>
-          </div>
-          <button type="submit" class="btn">Save Payment</button>
+          <button type="submit" class="btn">Record Payment</button>
+          <div class="cell-dim" style="flex-basis:100%;">Amount must exactly match the booking's total. A new payment always starts <b>Pending</b> — use the row actions to complete, fail, or refund it.</div>
         </form>
       </div>
       <div class="table-card">
@@ -606,7 +608,6 @@
         <form id="baggageForm" class="form-grid">
           <input type="hidden" id="baggageId">
           <div class="form-group"><label>Ticket ID</label><input type="number" id="baggageTicketId" class="form-control" required value="1"></div>
-          <div class="form-group"><label>Bag Sequence No</label><input type="number" id="baggageNumber" class="form-control" required value="1"></div>
           <div class="form-group"><label>Weight (kg)</label><input type="number" step="0.1" id="weightKg" class="form-control" required value="22.5"></div>
           <div class="form-group">
             <label>Type</label>
@@ -708,9 +709,10 @@
       </div>
       <div class="table-card">
         <table>
-          <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>License</th><th>Passport</th><th>Nationality</th><th>DOB</th><th>Actions</th></tr></thead>
+          <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>License</th><th>Nationality</th><th>Assignments</th><th>Upcoming</th><th>Actions</th></tr></thead>
           <tbody id="crewTable"></tbody>
         </table>
+        <div class="cell-dim" style="padding:12px 20px;">Passport number and date of birth aren't in this list — that's deliberate (Staff get a redacted roster view). Only an Admin can open the full record and edit it.</div>
       </div>
     </section>
 
@@ -727,16 +729,10 @@
           <input type="hidden" id="userId">
           <div class="form-group"><label>Name</label><input type="text" id="userName" class="form-control" required value="Salim Al-Harthy"></div>
           <div class="form-group"><label>Email</label><input type="email" id="userEmail" class="form-control" required value="salim@example.om"></div>
-          <div class="form-group"><label>Password</label><input type="password" id="userPassword" class="form-control" value="Rihla2026!"></div>
-          <div class="form-group">
-            <label>Role</label>
-            <select id="userRole" class="form-control">
-              <option value="Passenger">Passenger</option>
-              <option value="Staff">Staff</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-          <button type="submit" class="btn">Save User</button>
+          <div class="form-group" id="userPasswordGroup"><label>Password</label><input type="password" id="userPassword" class="form-control" value="Rihla2026!"></div>
+          <div class="form-group" id="userRoleGroup"><label>Role</label><select id="userRole" class="form-control"><option value="Passenger">Passenger</option><option value="Staff">Staff</option><option value="Admin">Admin</option></select></div>
+          <button type="submit" class="btn" id="userFormBtn">Create User</button>
+          <div class="cell-dim" style="flex-basis:100%;">Name and email can be edited after creation. Password can only be set when creating a user — there's no reset endpoint. Role changes go through the row's Change Role action.</div>
         </form>
       </div>
       <div class="table-card">
@@ -782,22 +778,42 @@ document.getElementById("collapseBtn").addEventListener("click", () => {
 
 function logout(){
   auth.clear();
-  location.reload();
+  location.href = "login.html";
 }
+
+// PATCH helper for the state-machine endpoints (flight/booking/payment status,
+// user role). optional confirm text since some of these are destructive-ish
+async function patchStatus(path, body, reloadFns, confirmText){
+  if (confirmText && !confirm(confirmText)) return;
+  try {
+    await api.patch(path, body);
+    showAlert("Updated successfully", "success");
+    reloadFns.forEach(fn => fn());
+  } catch(err) { showAlert(err.message); }
+}
+
+// dismiss button on api.js's showAlert() markup uses data-bs-dismiss, which
+// needs bootstrap's JS bundle - this page doesn't load it, so wire it up here
+document.getElementById("alert").addEventListener("click", (e) => {
+  if (e.target.closest(".btn-close")) document.getElementById("alert").innerHTML = "";
+});
 
 /* ============================================================
    API FETCH & RENDER CALLS
    ============================================================ */
 async function loadDashboard(){
   try {
-    const [flights, bookings, airplanes, users] = await Promise.all([
-      api.get("/flights").catch(() => []),
+    // /flights is paginated - { total, page, pageSize, items } - not a bare
+    // array like every other list endpoint. unwrap it here
+    const [flightsPage, bookings, airplanes, users] = await Promise.all([
+      api.get("/flights?pageSize=200").catch(() => ({ total: 0, items: [] })),
       api.get("/bookings").catch(() => []),
       api.get("/airplanes").catch(() => []),
       api.get("/users").catch(() => [])
     ]);
+    const flights = flightsPage.items || [];
 
-    document.getElementById("statFlights").textContent = flights.length;
+    document.getElementById("statFlights").textContent = flightsPage.total ?? flights.length;
     document.getElementById("statBookings").textContent = bookings.length;
     document.getElementById("statAirplanes").textContent = airplanes.length;
     document.getElementById("statUsers").textContent = users.length;
@@ -826,13 +842,16 @@ async function loadDashboard(){
       </div>
     `).join("");
   } catch(err) {
-    showAlert(err.message);
+    if (err.status !== 403) showAlert(err.message);
   }
 }
 
+const FLIGHT_STATUSES = ["Scheduled","Boarding","Departed","Delayed","Landed","Cancelled"];
+
 async function loadFlights(){
   try {
-    const data = await api.get("/flights");
+    const page = await api.get("/flights?pageSize=200");
+    const data = page.items || [];
     document.getElementById("flightsTable").innerHTML = data.map(f => `
       <tr>
         <td class="mono-link">${f.id}</td>
@@ -843,12 +862,18 @@ async function loadFlights(){
         <td>${formatDate(f.arrivalTime)}</td>
         <td>${statusBadge(f.status)}</td>
         <td>
-          <button class="btn-outline" onclick='editFlight(${JSON.stringify(f)})'>Edit</button>
-          <button class="btn-outline-red" onclick="deleteFlight(${f.id})">Delete</button>
+          <div class="row-actions">
+            <button class="btn-outline" onclick='editFlight(${JSON.stringify(f)})'>Edit</button>
+            <select class="form-control" style="width:auto;display:inline-block;padding:4px 6px;" onchange="if(this.value){patchStatus('/flights/'+${f.id}+'/status',{status:this.value},[loadFlights,loadDashboard]);this.value='';}">
+              <option value="">Set status…</option>
+              ${FLIGHT_STATUSES.filter(s => s !== f.status).map(s => `<option value="${s}">${s}</option>`).join("")}
+            </select>
+            <button class="btn-outline-red" onclick="deleteFlight(${f.id})">Delete</button>
+          </div>
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadAirports(){
@@ -874,7 +899,7 @@ async function loadAirports(){
         </div>
       </div>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadRoutes(){
@@ -893,7 +918,7 @@ async function loadRoutes(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadBookings(){
@@ -907,12 +932,24 @@ async function loadBookings(){
         <td><b>${formatMoney(b.totalAmount)}</b></td>
         <td>${statusBadge(b.status)}</td>
         <td>
-          <button class="btn-outline" onclick='editBooking(${JSON.stringify(b)})'>Edit</button>
-          <button class="btn-outline-red" onclick="deleteBooking(${b.id})">Delete</button>
+          <div class="row-actions">
+            ${b.status === "Pending" ? `<button class="btn-outline" onclick="patchStatus('/bookings/${b.id}/status',{status:'Confirmed'},[loadBookings,loadDashboard])">Confirm</button>` : ""}
+            ${b.status !== "Cancelled" ? `<button class="btn-outline-red" onclick="patchStatus('/bookings/${b.id}/status',{status:'Cancelled'},[loadBookings,loadDashboard],'Cancel this booking?')">Cancel</button>` : ""}
+            <button class="btn-outline" onclick="recalcBooking(${b.id})" title="Re-sum the total from this booking's tickets">Recalculate</button>
+            <button class="btn-outline-red" onclick="deleteBooking(${b.id})">Delete</button>
+          </div>
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
+}
+
+// BookingUpdateDto carries no fields - PUT recalculates TotalAmount from the
+// booking's tickets server-side. this is the repair tool for a booking that
+// drifted, not a form edit
+async function recalcBooking(id){
+  try { await api.put(`/bookings/${id}`, {}); showAlert("Booking total recalculated", "success"); loadBookings(); loadDashboard(); }
+  catch(err) { showAlert(err.message); }
 }
 
 async function loadTickets(){
@@ -932,27 +969,37 @@ async function loadTickets(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadPassengers(){
   try {
-    const data = await api.get("/passenger-profiles");
+    // PassengerProfilesController has no custom [Route] - the default
+    // "api/[controller]" token resolves to "PassengerProfiles", not a
+    // kebab-cased "passenger-profiles". routing is case-insensitive but
+    // not hyphen-aware, so the hyphenated form 404s
+    //
+    // GetAll returns ProfileSummaryDto for Admin/Staff - a REDACTED shape:
+    // { id, userId, userName, passportLast4, nationality, age }. It does NOT
+    // include passportNumber, dateOfBirth, or phoneNumber - those only come
+    // back from GET /passengerprofiles/{id} when the caller is the profile's
+    // owner or an Admin. Rendering the full fields here always showed blank
+    // or "undefined" because they simply aren't in this response.
+    const data = await api.get("/passengerprofiles");
     document.getElementById("passengersTable").innerHTML = data.map(p => `
       <tr>
         <td class="mono-link">${p.id}</td>
-        <td>User #${p.userId}</td>
-        <td>${escapeHtml(p.passportNumber)}</td>
+        <td>${escapeHtml(p.userName)} <span class="cell-dim">(User #${p.userId})</span></td>
+        <td>•••• ${escapeHtml(p.passportLast4)}</td>
         <td>${escapeHtml(p.nationality)}</td>
-        <td>${p.dateOfBirth}</td>
-        <td>${escapeHtml(p.phoneNumber)}</td>
+        <td>${p.age}</td>
         <td>
-          <button class="btn-outline" onclick='editProfile(${JSON.stringify(p)})'>Edit</button>
+          <button class="btn-outline" onclick="editProfile(${p.id})">Edit</button>
           <button class="btn-outline-red" onclick="deleteProfile(${p.id})">Delete</button>
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadPayments(){
@@ -967,17 +1014,24 @@ async function loadPayments(){
         <td>${escapeHtml(p.method)}</td>
         <td>${statusBadge(p.status)}</td>
         <td>
-          <button class="btn-outline" onclick='editPayment(${JSON.stringify(p)})'>Edit</button>
-          <button class="btn-outline-red" onclick="deletePayment(${p.id})">Delete</button>
+          <div class="row-actions">
+            ${p.status === "Pending" ? `<button class="btn-outline" onclick="patchStatus('/payments/${p.id}/status',{status:'Completed'},[loadPayments,loadBookings,loadDashboard])">Complete</button>` : ""}
+            ${p.status === "Pending" ? `<button class="btn-outline-red" onclick="patchStatus('/payments/${p.id}/status',{status:'Failed'},[loadPayments])">Fail</button>` : ""}
+            ${p.status === "Failed" ? `<button class="btn-outline" onclick="patchStatus('/payments/${p.id}/status',{status:'Pending'},[loadPayments])">Retry</button>` : ""}
+            ${p.status === "Completed" ? `<button class="btn-outline-red" onclick="patchStatus('/payments/${p.id}/status',{status:'Refunded'},[loadPayments,loadBookings],'Refund this payment?')">Refund</button>` : ""}
+            ${p.status === "Pending" ? `<button class="btn-outline" onclick='editPayment(${JSON.stringify(p)})'>Edit</button>` : ""}
+            <button class="btn-outline-red" onclick="deletePayment(${p.id})">Delete</button>
+          </div>
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadBaggage(){
   try {
-    const data = await api.get("/baggage");
+    // controller class is BaggagesController -> "api/Baggages", plural
+    const data = await api.get("/baggages");
     document.getElementById("baggageTable").innerHTML = data.map(b => `
       <tr>
         <td class="mono-link">${b.id}</td>
@@ -992,12 +1046,13 @@ async function loadBaggage(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadSeatClasses(){
   try {
-    const data = await api.get("/seat-classes");
+    // SeatClassesController -> "api/SeatClasses", no hyphen
+    const data = await api.get("/seatclasses");
     document.getElementById("seatclassesTable").innerHTML = data.map(sc => `
       <tr>
         <td class="mono-link">${sc.id}</td>
@@ -1010,7 +1065,7 @@ async function loadSeatClasses(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadAirplanes(){
@@ -1029,12 +1084,13 @@ async function loadAirplanes(){
         </td>
       </tr>
     `).join("");
-  } catch(err) { showAlert(err.message); }
+  } catch(err) { if (err.status !== 403) showAlert(err.message); }
 }
 
 async function loadCrew(){
   try {
-    const data = await api.get("/crew");
+    // CrewsController -> "api/Crews", plural
+    const data = await api.get("/crews");
     document.getElementById("crewTable").innerHTML = data.map(c => `
       <tr>
         <td class="mono-link">${c.id}</td>
@@ -1053,6 +1109,8 @@ async function loadCrew(){
   } catch(err) { showAlert(err.message); }
 }
 
+const USER_ROLES = ["Passenger","Staff","Admin"];
+
 async function loadUsers(){
   try {
     const data = await api.get("/users");
@@ -1063,8 +1121,14 @@ async function loadUsers(){
         <td>${escapeHtml(u.email)}</td>
         <td>${statusBadge(u.role)}</td>
         <td>
-          <button class="btn-outline" onclick='editUser(${JSON.stringify(u)})'>Edit</button>
-          <button class="btn-outline-red" onclick="deleteUser(${u.id})">Delete</button>
+          <div class="row-actions">
+            <button class="btn-outline" onclick='editUser(${JSON.stringify(u)})'>Edit</button>
+            <select class="form-control" style="width:auto;display:inline-block;padding:4px 6px;" onchange="if(this.value){patchStatus('/users/'+${u.id}+'/role',{role:this.value},[loadUsers]);this.value='';}">
+              <option value="">Change role…</option>
+              ${USER_ROLES.filter(r => r !== u.role).map(r => `<option value="${r}">${r}</option>`).join("")}
+            </select>
+            <button class="btn-outline-red" onclick="deleteUser(${u.id})">Delete</button>
+          </div>
         </td>
       </tr>
     `).join("");
@@ -1075,6 +1139,17 @@ async function loadUsers(){
    FORM SUBMISSIONS & ACTION HANDLERS
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  // this page is entirely behind [Authorize] on the backend - no point
+  // rendering a dashboard that's about to fail every request
+  if (!requireLogin()) return;
+
+  const me = auth.getUser();
+  if (me) {
+    document.getElementById("sidebarAvatar").textContent = me.name ? me.name.charAt(0).toUpperCase() : "?";
+    document.getElementById("sidebarName").textContent = me.name || "—";
+    document.getElementById("sidebarRole").textContent = me.role || "—";
+  }
+
   const today = new Date();
   document.getElementById("todayDate").textContent = today.toLocaleDateString('en-US', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + " — Live dashboard";
 
@@ -1085,13 +1160,19 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("flightForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("flightId").value;
-    const body = {
+    // RouteId is only accepted on create - FlightUpdateDto doesn't have it,
+    // changing where an existing flight goes is a different operation
+    const body = id ? {
+      flightNumber: document.getElementById("flightNumber").value,
+      airplaneId: parseInt(document.getElementById("flightAirplaneId").value),
+      departureTime: document.getElementById("departureTime").value,
+      arrivalTime: document.getElementById("arrivalTime").value
+    } : {
       flightNumber: document.getElementById("flightNumber").value,
       routeId: parseInt(document.getElementById("flightRouteId").value),
       airplaneId: parseInt(document.getElementById("flightAirplaneId").value),
       departureTime: document.getElementById("departureTime").value,
-      arrivalTime: document.getElementById("arrivalTime").value,
-      status: document.getElementById("flightStatus").value
+      arrivalTime: document.getElementById("arrivalTime").value
     };
     try {
       if (id) await api.put(`/flights/${id}`, body);
@@ -1099,6 +1180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showAlert("Flight saved successfully", "success");
       document.getElementById("flightForm").reset();
       document.getElementById("flightId").value = "";
+      document.getElementById("flightRouteId").disabled = false;
       loadFlights();
       loadDashboard();
     } catch(err) { showAlert(err.message); }
@@ -1144,21 +1226,15 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(err) { showAlert(err.message); }
   });
 
-  // Booking Submit
+  // Booking Submit - create only. BookingCreateDto is just { userId } -
+  // date is stamped server-side (UtcNow) and status always starts Pending
   document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("bookingId").value;
-    const body = {
-      userId: parseInt(document.getElementById("bookingUserId").value),
-      bookingDate: document.getElementById("bookingDate").value,
-      status: document.getElementById("bookingStatus").value
-    };
+    const body = { userId: parseInt(document.getElementById("bookingUserId").value) };
     try {
-      if (id) await api.put(`/bookings/${id}`, body);
-      else await api.post("/bookings", body);
-      showAlert("Booking saved successfully", "success");
+      await api.post("/bookings", body);
+      showAlert("Booking created successfully", "success");
       document.getElementById("bookingForm").reset();
-      document.getElementById("bookingId").value = "";
       loadBookings();
       loadDashboard();
     } catch(err) { showAlert(err.message); }
@@ -1171,7 +1247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = {
       bookingId: parseInt(document.getElementById("ticketBookingId").value),
       flightId: parseInt(document.getElementById("ticketFlightId").value),
-      seatClassId: parseInt(document.getElementById("seatClassId").value),
+      seatClassId: parseInt(document.getElementById("ticketSeatClassId").value),
       seatNumber: document.getElementById("seatNumber").value,
       passengerName: document.getElementById("passengerName").value
     };
@@ -1197,8 +1273,8 @@ document.addEventListener("DOMContentLoaded", () => {
       phoneNumber: document.getElementById("phoneNumber").value
     };
     try {
-      if (id) await api.put(`/passenger-profiles/${id}`, body);
-      else await api.post("/passenger-profiles", body);
+      if (id) await api.put(`/passengerprofiles/${id}`, body);
+      else await api.post("/passengerprofiles", body);
       showAlert("Passenger Profile saved successfully", "success");
       document.getElementById("profileForm").reset();
       document.getElementById("profileId").value = "";
@@ -1206,43 +1282,43 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(err) { showAlert(err.message); }
   });
 
-  // Payment Submit
+  // Payment Submit - create takes { bookingId, amount, method }, status
+  // always starts Pending. edit (Pending payments only) takes { amount, method }
   document.getElementById("paymentForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("paymentId").value;
-    const body = {
-      bookingId: parseInt(document.getElementById("paymentBookingId").value),
-      amount: parseFloat(document.getElementById("paymentAmount").value),
-      paymentDate: document.getElementById("paymentDate").value,
-      method: document.getElementById("paymentMethod").value,
-      status: document.getElementById("paymentStatus").value
-    };
+    const id = document.getElementById("paymentId")?.value;
+    const amount = parseFloat(document.getElementById("paymentAmount").value);
+    const method = document.getElementById("paymentMethod").value;
     try {
-      if (id) await api.put(`/payments/${id}`, body);
-      else await api.post("/payments", body);
+      if (id) await api.put(`/payments/${id}`, { amount, method });
+      else await api.post("/payments", { bookingId: parseInt(document.getElementById("paymentBookingId").value), amount, method });
       showAlert("Payment saved successfully", "success");
       document.getElementById("paymentForm").reset();
-      document.getElementById("paymentId").value = "";
+      if (document.getElementById("paymentId")) document.getElementById("paymentId").value = "";
       loadPayments();
     } catch(err) { showAlert(err.message); }
   });
 
-  // Baggage Submit
+  // Baggage Submit. BaggageNumber is assigned server-side (next in sequence
+  // per ticket) - not something the client picks
   document.getElementById("baggageForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("baggageId").value;
-    const body = {
+    const body = id ? {
+      weightKg: parseFloat(document.getElementById("weightKg").value),
+      type: document.getElementById("baggageType").value
+    } : {
       ticketId: parseInt(document.getElementById("baggageTicketId").value),
-      baggageNumber: parseInt(document.getElementById("baggageNumber").value),
       weightKg: parseFloat(document.getElementById("weightKg").value),
       type: document.getElementById("baggageType").value
     };
     try {
-      if (id) await api.put(`/baggage/${id}`, body);
-      else await api.post("/baggage", body);
+      if (id) await api.put(`/baggages/${id}`, body);
+      else await api.post("/baggages", body);
       showAlert("Baggage item saved successfully", "success");
       document.getElementById("baggageForm").reset();
       document.getElementById("baggageId").value = "";
+      document.getElementById("baggageTicketId").disabled = false;
       loadBaggage();
     } catch(err) { showAlert(err.message); }
   });
@@ -1257,8 +1333,8 @@ document.addEventListener("DOMContentLoaded", () => {
       baggageAllowanceKg: parseInt(document.getElementById("baggageAllowanceKg").value)
     };
     try {
-      if (id) await api.put(`/seat-classes/${id}`, body);
-      else await api.post("/seat-classes", body);
+      if (id) await api.put(`/seatclasses/${id}`, body);
+      else await api.post("/seatclasses", body);
       showAlert("Seat Class saved successfully", "success");
       document.getElementById("seatClassForm").reset();
       document.getElementById("seatClassId").value = "";
@@ -1300,8 +1376,8 @@ document.addEventListener("DOMContentLoaded", () => {
       dateOfBirth: document.getElementById("crewDob").value
     };
     try {
-      if (id) await api.put(`/crew/${id}`, body);
-      else await api.post("/crew", body);
+      if (id) await api.put(`/crews/${id}`, body);
+      else await api.post("/crews", body);
       showAlert("Crew Member saved successfully", "success");
       document.getElementById("crewForm").reset();
       document.getElementById("crewId").value = "";
@@ -1309,24 +1385,30 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(err) { showAlert(err.message); }
   });
 
-  // User Submit
+  // User Submit. UserUpdateDto only accepts { name, email } - role goes
+  // through PATCH /users/{id}/role (see the row action) and there is no
+  // password-reset endpoint at all, so editing never sends either
   document.getElementById("userForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("userId").value;
-    const body = {
-      name: document.getElementById("userName").value,
-      email: document.getElementById("userEmail").value,
-      role: document.getElementById("userRole").value
-    };
-    const pass = document.getElementById("userPassword").value;
-    if (pass) body.password = pass;
-
     try {
-      if (id) await api.put(`/users/${id}`, body);
-      else await api.post("/users", body);
+      if (id) {
+        await api.put(`/users/${id}`, {
+          name: document.getElementById("userName").value,
+          email: document.getElementById("userEmail").value
+        });
+      } else {
+        await api.post("/users", {
+          name: document.getElementById("userName").value,
+          email: document.getElementById("userEmail").value,
+          password: document.getElementById("userPassword").value,
+          role: document.getElementById("userRole").value
+        });
+      }
       showAlert("User saved successfully", "success");
       document.getElementById("userForm").reset();
       document.getElementById("userId").value = "";
+      resetUserFormMode();
       loadUsers();
       loadDashboard();
     } catch(err) { showAlert(err.message); }
@@ -1356,10 +1438,12 @@ function editFlight(f){
   document.getElementById("flightId").value = f.id;
   document.getElementById("flightNumber").value = f.flightNumber;
   document.getElementById("flightRouteId").value = f.routeId;
+  // FlightUpdateDto has no RouteId - changing a flight's route after
+  // creation isn't supported, so lock the field while editing
+  document.getElementById("flightRouteId").disabled = true;
   document.getElementById("flightAirplaneId").value = f.airplaneId;
   document.getElementById("departureTime").value = f.departureTime.substring(0,16);
   document.getElementById("arrivalTime").value = f.arrivalTime.substring(0,16);
-  document.getElementById("flightStatus").value = f.status;
   window.scrollTo(0, 0);
 }
 async function deleteFlight(id){
@@ -1393,13 +1477,6 @@ async function deleteRoute(id){
   try { await api.del(`/routes/${id}`); loadRoutes(); } catch(e){ showAlert(e.message); }
 }
 
-function editBooking(b){
-  document.getElementById("bookingId").value = b.id;
-  document.getElementById("bookingUserId").value = b.userId;
-  document.getElementById("bookingDate").value = b.bookingDate.substring(0,16);
-  document.getElementById("bookingStatus").value = b.status;
-  window.scrollTo(0, 0);
-}
 async function deleteBooking(id){
   if(!confirm("Delete booking?")) return;
   try { await api.del(`/bookings/${id}`); loadBookings(); loadDashboard(); } catch(e){ showAlert(e.message); }
@@ -1409,7 +1486,7 @@ function editTicket(t){
   document.getElementById("ticketId").value = t.id;
   document.getElementById("ticketBookingId").value = t.bookingId;
   document.getElementById("ticketFlightId").value = t.flightId;
-  document.getElementById("seatClassId").value = t.seatClassId;
+  document.getElementById("ticketSeatClassId").value = t.seatClassId;
   document.getElementById("seatNumber").value = t.seatNumber;
   document.getElementById("passengerName").value = t.passengerName;
   window.scrollTo(0, 0);
@@ -1419,27 +1496,46 @@ async function deleteTicket(id){
   try { await api.del(`/tickets/${id}`); loadTickets(); } catch(e){ showAlert(e.message); }
 }
 
-function editProfile(p){
-  document.getElementById("profileId").value = p.id;
-  document.getElementById("profileUserId").value = p.userId;
-  document.getElementById("passportNumber").value = p.passportNumber;
-  document.getElementById("nationality").value = p.nationality;
-  document.getElementById("dateOfBirth").value = p.dateOfBirth;
-  document.getElementById("phoneNumber").value = p.phoneNumber;
-  window.scrollTo(0, 0);
+// takes an id, not the row object - the list only carries the redacted
+// summary (no passportNumber/dateOfBirth/phoneNumber), so the full record
+// has to be re-fetched. GET /passengerprofiles/{id} returns the full detail
+// if you're the owner or an Admin; Staff who aren't either get the same
+// redacted summary back and the form will end up blank for those fields -
+// that's the backend enforcing "only the owner or Admin can edit this",
+// which also means Save will 403 for anyone else, by design
+async function editProfile(id){
+  try {
+    const p = await api.get(`/passengerprofiles/${id}`);
+    document.getElementById("profileId").value = p.id;
+    document.getElementById("profileUserId").value = p.userId;
+    document.getElementById("passportNumber").value = p.passportNumber || "";
+    document.getElementById("nationality").value = p.nationality || "";
+    document.getElementById("dateOfBirth").value = p.dateOfBirth || "";
+    document.getElementById("phoneNumber").value = p.phoneNumber || "";
+    if (!p.passportNumber) showAlert("You can only see and edit your own profile, or any profile if you're an Admin. This one is read-only for you.", "warning");
+    window.scrollTo(0, 0);
+  } catch(err) { showAlert(err.message); }
 }
 async function deleteProfile(id){
   if(!confirm("Delete profile?")) return;
-  try { await api.del(`/passenger-profiles/${id}`); loadPassengers(); } catch(e){ showAlert(e.message); }
+  try { await api.del(`/passengerprofiles/${id}`); loadPassengers(); } catch(e){ showAlert(e.message); }
 }
 
 function editPayment(p){
-  document.getElementById("paymentId").value = p.id;
+  // PaymentUpdateDto only accepts amount + method, and only while Pending -
+  // the backend rejects an edit on a Completed/Refunded payment anyway
+  if (p.status !== "Pending") { showAlert("Only a Pending payment can be edited.", "warning"); return; }
+  let idField = document.getElementById("paymentId");
+  if (!idField) {
+    idField = document.createElement("input");
+    idField.type = "hidden";
+    idField.id = "paymentId";
+    document.getElementById("paymentForm").prepend(idField);
+  }
+  idField.value = p.id;
   document.getElementById("paymentBookingId").value = p.bookingId;
   document.getElementById("paymentAmount").value = p.amount;
-  document.getElementById("paymentDate").value = p.paymentDate.substring(0,16);
   document.getElementById("paymentMethod").value = p.method;
-  document.getElementById("paymentStatus").value = p.status;
   window.scrollTo(0, 0);
 }
 async function deletePayment(id){
@@ -1450,14 +1546,14 @@ async function deletePayment(id){
 function editBaggage(b){
   document.getElementById("baggageId").value = b.id;
   document.getElementById("baggageTicketId").value = b.ticketId;
-  document.getElementById("baggageNumber").value = b.baggageNumber;
+  document.getElementById("baggageTicketId").disabled = true; // not updatable
   document.getElementById("weightKg").value = b.weightKg;
   document.getElementById("baggageType").value = b.type;
   window.scrollTo(0, 0);
 }
 async function deleteBaggage(id){
   if(!confirm("Delete baggage?")) return;
-  try { await api.del(`/baggage/${id}`); loadBaggage(); } catch(e){ showAlert(e.message); }
+  try { await api.del(`/baggages/${id}`); loadBaggage(); } catch(e){ showAlert(e.message); }
 }
 
 function editSeatClass(sc){
@@ -1469,7 +1565,7 @@ function editSeatClass(sc){
 }
 async function deleteSeatClass(id){
   if(!confirm("Delete seat class?")) return;
-  try { await api.del(`/seat-classes/${id}`); loadSeatClasses(); } catch(e){ showAlert(e.message); }
+  try { await api.del(`/seatclasses/${id}`); loadSeatClasses(); } catch(e){ showAlert(e.message); }
 }
 
 function editAirplane(a){
@@ -1497,15 +1593,26 @@ function editCrew(c){
 }
 async function deleteCrew(id){
   if(!confirm("Delete crew member?")) return;
-  try { await api.del(`/crew/${id}`); loadCrew(); } catch(e){ showAlert(e.message); }
+  try { await api.del(`/crews/${id}`); loadCrew(); } catch(e){ showAlert(e.message); }
 }
 
 function editUser(u){
   document.getElementById("userId").value = u.id;
   document.getElementById("userName").value = u.name;
   document.getElementById("userEmail").value = u.email;
-  document.getElementById("userRole").value = u.role;
+  // password and role aren't part of UserUpdateDto - hide them while editing
+  // so the form doesn't imply a change that silently won't happen
+  document.getElementById("userPasswordGroup").style.display = "none";
+  document.getElementById("userRoleGroup").style.display = "none";
+  document.getElementById("userPassword").required = false;
+  document.getElementById("userFormBtn").textContent = "Update User";
   window.scrollTo(0, 0);
+}
+function resetUserFormMode(){
+  document.getElementById("userPasswordGroup").style.display = "";
+  document.getElementById("userRoleGroup").style.display = "";
+  document.getElementById("userPassword").required = false;
+  document.getElementById("userFormBtn").textContent = "Create User";
 }
 async function deleteUser(id){
   if(!confirm("Delete user?")) return;
