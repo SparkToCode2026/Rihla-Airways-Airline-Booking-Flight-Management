@@ -76,6 +76,6 @@ function editBaggage(id) {
   window.scrollTo(0, 0);
 }
 async function deleteBaggage(id) {
-  if (!confirm("Delete baggage?")) return;
+  if (!await uiConfirm("This removes the baggage record and its fee.", { title: "Delete baggage", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/baggages/${id}`); showAlert("Baggage deleted.", "success"); loadBaggage(); } catch (e) { showAlert(e.message); }
 }

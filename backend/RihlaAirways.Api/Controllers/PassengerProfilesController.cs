@@ -217,6 +217,28 @@ public class PassengerProfilesController : ControllerBase
     }
 
 
+    // ============ 5b. GET my own profile ============
+    // "the signed-in user's profile", which the client otherwise can't ask for:
+    // profile ids don't match user ids, the list endpoint is staff-only, and a
+    // passenger can only read their own by id - so without this the profile
+    // page would have to probe /1, /2, /3... until one came back 200.
+    // returns 204 rather than 404 when there isn't one yet: "you have no
+    // profile" is a normal state for a new account, not an error
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMine()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(raw, out var callerId)) return Unauthorized();
+
+        var profile = await _context.PassengerProfiles
+            .FirstOrDefaultAsync(p => p.UserId == callerId);
+        if (profile == null) return NoContent();
+
+        return Ok(await GetDetailAsync(profile.Id));
+    }
+
+
     // ============ 6. GET by id ============
     [HttpGet("{id}")]
     [Authorize]

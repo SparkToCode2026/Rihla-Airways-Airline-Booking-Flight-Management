@@ -87,6 +87,6 @@ async function editProfile(id) {
   } catch (err) { showAlert(err.message); }
 }
 async function deleteProfile(id) {
-  if (!confirm("Delete profile?")) return;
+  if (!await uiConfirm("This removes the passenger's travel document details.", { title: "Delete profile", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/passengerprofiles/${id}`); showAlert("Profile deleted.", "success"); loadPassengers(); } catch (e) { showAlert(e.message); }
 }

@@ -303,6 +303,52 @@ public class FlightsController : ControllerBase
     }
 
 
+    // ============ 6b. GET seat map ============
+    // exists so the booking UI can draw a real seat map. a passenger can't get
+    // this from /tickets/filter - that's scoped to their OWN tickets, so every
+    // seat sold to somebody else would look free and they'd only discover the
+    // clash from a 409 after submitting.
+    //
+    // this returns seat NUMBERS and nothing else: no passenger names, no
+    // booking ids, no prices. which seats are sold is exactly what any airline
+    // seat map shows you before you've bought anything, so it carries no more
+    // information than a check-in screen does.
+    // [Authorize] rather than anonymous purely to keep it off the public
+    // surface - it's a booking tool, not shopping data
+    [HttpGet("{id}/seats")]
+    [Authorize]
+    public async Task<IActionResult> GetSeatMap(int id)
+    {
+        var flight = await _context.Flights
+            .Include(f => f.Airplane)
+            .FirstOrDefaultAsync(f => f.Id == id);
+        if (flight == null) return NotFound();
+
+        var occupied = await _context.Tickets
+            .Where(t => t.FlightId == id)
+            .Select(t => t.SeatNumber)
+            .ToListAsync();
+
+        // same 6-abreast assumption TicketsController.ValidateSeat uses when it
+        // decides whether a row exists - the two must agree or the map will
+        // offer seats the API then rejects
+        const int seatsPerRow = 6;
+        var rows = (int)Math.Ceiling(flight.Airplane.Capacity / (double)seatsPerRow);
+
+        return Ok(new
+        {
+            FlightId = flight.Id,
+            flight.FlightNumber,
+            flight.Status,
+            Capacity = flight.Airplane.Capacity,
+            Rows = rows,
+            SeatsPerRow = seatsPerRow,
+            Letters = new[] { "A", "B", "C", "D", "E", "F" },
+            Occupied = occupied
+        });
+    }
+
+
     // ============ 7. GET filter (LINQ Where) ============
     [HttpGet("filter")]
     [AllowAnonymous]

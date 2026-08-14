@@ -85,6 +85,6 @@ async function editCrew(id) {
   } catch (err) { showAlert(err.message); }
 }
 async function deleteCrew(id) {
-  if (!confirm("Delete crew member?")) return;
+  if (!await uiConfirm("Crew members rostered on a flight cannot be removed.", { title: "Delete crew member", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/crews/${id}`); showAlert("Crew member deleted.", "success"); loadCrew(); } catch (e) { showAlert(e.message); }
 }

@@ -1,7 +1,21 @@
+let airportPager;
+
+// only roles that can write this resource get row actions - the API
+// enforces it too, this just stops the UI offering a guaranteed 403
+const canWrite = () => isAdminUser();
+
 // Airports page. Depends on api.js, auth.js and common.js being loaded first.
 
 document.addEventListener("DOMContentLoaded", () => {
   if (!initShell("airports")) return;
+
+  // the pager holds the full result set and hands renderAirportsGrid one page
+  // at a time; every load/filter goes through setData so paging survives a filter
+  airportPager = createPager({
+    pageSize: 12,          // 12 cards fills the 3-across grid evenly
+    mountId: "airportsPager",
+    onRender: renderAirportsGrid
+  });
   loadAirports();
 
   document.getElementById("airportForm").addEventListener("submit", async (e) => {
@@ -43,8 +57,7 @@ function renderAirportsGrid(data) {
         </div>
       </div>
       <div class="airport-actions">
-        <button class="btn-outline" onclick="editAirport(${a.id})">Edit</button>
-        <button class="btn-outline-red" onclick="deleteAirport(${a.id})">Delete</button>
+        ${canWrite() ? `<button class="btn-outline" onclick="editAirport(${a.id})">Edit</button><button class="btn-outline-red" onclick="deleteAirport(${a.id})">Delete</button>` : `<span class="cell-dim">—</span>`}
       </div>
     </div>
   `).join("");
@@ -53,7 +66,7 @@ function renderAirportsGrid(data) {
 async function loadAirports() {
   try {
     const data = await api.get("/airports");
-    renderAirportsGrid(data);
+    airportPager.setData(data);
   } catch (err) { if (err.status !== 403) showAlert(err.message); }
 }
 
@@ -61,7 +74,7 @@ async function filterAirports() {
   const qs = buildQuery({ country: "fapCountry", city: "fapCity", code: "fapCode", search: "fapSearch", connectedOnly: "fapConnected" });
   try {
     const data = await api.get(`/airports/filter${qs ? "?" + qs : ""}`);
-    renderAirportsGrid(data);
+    airportPager.setData(data);
   } catch (err) { showAlert(err.message); }
 }
 
@@ -76,6 +89,6 @@ function editAirport(id) {
   window.scrollTo(0, 0);
 }
 async function deleteAirport(id) {
-  if (!confirm("Delete airport?")) return;
+  if (!await uiConfirm("Airports used by a route cannot be removed.", { title: "Delete airport", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/airports/${id}`); showAlert("Airport deleted.", "success"); loadAirports(); } catch (e) { showAlert(e.message); }
 }

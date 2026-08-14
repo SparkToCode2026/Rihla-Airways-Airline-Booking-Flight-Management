@@ -61,7 +61,10 @@ public class RoutesController : ControllerBase
 
     // ============ 1. POST — create ============
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    // Admin only. opening a new city pair is network/commercial planning, not a
+    // check-in desk action - and RouteId is the anchor for every Flight, fare
+    // and ticket price hanging off it. Staff keep full read access + stats
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] RouteCreateDto dto)
     {
         // edge case first, and this one has no db constraint behind it:
@@ -105,7 +108,7 @@ public class RoutesController : ControllerBase
 
     // ============ 2. PUT — full update ============
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] RouteUpdateDto dto)
     {
         var route = await _context.Routes.FindAsync(id);
@@ -144,7 +147,7 @@ public class RoutesController : ControllerBase
 
     // ============ 3. PATCH — second distinct update ============
     [HttpPatch("{id}/duration")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateDuration(int id, [FromBody] DurationUpdateDto dto)
     {
         var route = await _context.Routes.FindAsync(id);

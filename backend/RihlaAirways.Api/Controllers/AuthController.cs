@@ -29,10 +29,19 @@ public class AuthController : ControllerBase
     // and every [Authorize(Roles = "Admin")] in the project would be
     // decorative. staff accounts get created by an existing admin through
     // UsersController.Create
+    // MinLength(8) on its own accepted "aaaaaaaa". the regex asks for a mix of
+    // letters and digits, which is the cheapest rule that rules out the
+    // passwords people actually pick. deliberately NOT demanding a symbol -
+    // length plus variety beats a symbol nobody remembers
     public record RegisterDto(
         [Required][MaxLength(100)] string Name,
         [Required][EmailAddress][MaxLength(150)] string Email,
-        [Required][MinLength(8)] string Password);
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+        [MaxLength(128)]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d).+$",
+            ErrorMessage = "Password must contain at least one letter and one number.")]
+        string Password);
 
     public record LoginDto(
         [Required][EmailAddress] string Email,

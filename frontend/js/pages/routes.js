@@ -1,7 +1,23 @@
+// only roles that can write this resource get row actions - the API
+// enforces it too, this just stops the UI offering a guaranteed 403
+const canWrite = () => isAdminUser();
+
 // Routes page. Depends on api.js, auth.js and common.js being loaded first.
+
+// the pager owns the full result set and hands renderRoutesTable one page at a
+// time. every load/filter calls routePager.setData(...) rather than rendering
+// directly, so paging keeps working after a filter
+let routePager;
 
 document.addEventListener("DOMContentLoaded", () => {
   if (!initShell("routes")) return;
+
+  routePager = createPager({
+    pageSize: 10,
+    mountId: "routesPager",
+    onRender: renderRoutesTable
+  });
+
   loadRoutes();
 
   document.getElementById("routeForm").addEventListener("submit", async (e) => {
@@ -27,6 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
 let routeRows = [];
 
 function renderRoutesTable(data) {
+  // note: `data` is one PAGE. editRoute looks rows up here, and you can only
+  // click a row that's currently on screen, so a page's worth is enough
   routeRows = data;
   document.getElementById("routesTable").innerHTML = data.map(r => `
     <tr>
@@ -36,8 +54,7 @@ function renderRoutesTable(data) {
       <td>${r.distanceKm} km</td>
       <td>${r.estimatedDurationMin} mins</td>
       <td>
-        <button class="btn-outline" onclick="editRoute(${r.id})">Edit</button>
-        <button class="btn-outline-red" onclick="deleteRoute(${r.id})">Delete</button>
+        ${canWrite() ? `<button class="btn-outline" onclick="editRoute(${r.id})">Edit</button><button class="btn-outline-red" onclick="deleteRoute(${r.id})">Delete</button>` : `<span class="cell-dim">—</span>`}
       </td>
     </tr>
   `).join("");
@@ -46,7 +63,7 @@ function renderRoutesTable(data) {
 async function loadRoutes() {
   try {
     const data = await api.get("/routes");
-    renderRoutesTable(data);
+    routePager.setData(data);
   } catch (err) { if (err.status !== 403) showAlert(err.message); }
 }
 
@@ -54,7 +71,7 @@ async function filterRoutes() {
   const qs = buildQuery({ originId: "frOriginId", destinationId: "frDestId", maxDistance: "frMaxDist", originCode: "frOriginCode", destinationCountry: "frDestCountry" });
   try {
     const data = await api.get(`/routes/filter${qs ? "?" + qs : ""}`);
-    renderRoutesTable(data);
+    routePager.setData(data);
   } catch (err) { showAlert(err.message); }
 }
 
@@ -69,6 +86,6 @@ function editRoute(id) {
   window.scrollTo(0, 0);
 }
 async function deleteRoute(id) {
-  if (!confirm("Delete route?")) return;
+  if (!await uiConfirm("Routes are referenced by flights, so this may be refused.", { title: "Delete route", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/routes/${id}`); showAlert("Route deleted.", "success"); loadRoutes(); } catch (e) { showAlert(e.message); }
 }

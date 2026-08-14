@@ -256,8 +256,10 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var booking = await _context.Bookings.FindAsync(id);
-        if (booking == null) return NotFound();
-        if (!CanAccess(booking.UserId)) return Forbid();
+        // 404 for both "doesn't exist" and "not yours". this used to return
+        // NotFound for one and Forbid for the other, which meant walking the id
+        // range told you exactly which booking ids were real
+        if (booking == null || !CanAccess(booking.UserId)) return NotFound();
 
         return Ok(await ToDto(_context.Bookings.Where(b => b.Id == id)).FirstAsync());
     }

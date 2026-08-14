@@ -100,3 +100,161 @@ a:hover { color: var(--ra-accent-dk); }
   padding: 2rem 1rem;
 }
 .auth-card { width: 100%; max-width: 420px; }
+
+/* ============================================================
+   app shell - sidebar + main column. only pages that call
+   renderLayout() use these; login/register keep .auth-wrap
+   ============================================================ */
+
+.ra-shell { display: flex; min-height: 100vh; }
+
+/* --- sidebar --- */
+.ra-sidebar {
+  width: 240px;
+  flex-shrink: 0;               /* stops the nav squashing when a
+                                   table is wide */
+  background: var(--ra-surface);
+  border-right: 1px solid var(--ra-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;             /* nav stays put while a long
+                                   table scrolls */
+  top: 0;
+  height: 100vh;
+}
+
+.ra-brand {
+  display: flex; align-items: center; gap: .6rem;
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--ra-border);
+  text-decoration: none;
+}
+.ra-brand-text { font-size: 1.15rem; font-weight: 700; color: var(--ra-text); }
+
+.ra-nav { padding: .75rem .6rem; overflow-y: auto; flex: 1; }
+
+.ra-nav-item {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .6rem .8rem;
+  margin-bottom: .15rem;
+  border-radius: 8px;
+  color: var(--ra-muted);
+  font-size: .93rem;
+  text-decoration: none;
+  transition: background .12s, color .12s;
+}
+.ra-nav-item:hover { background: var(--ra-surface-2); color: var(--ra-text); }
+
+.ra-nav-item.active {
+  background: rgba(94,179,246,.12);
+  color: var(--ra-accent);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(94,179,246,.35);
+}
+
+.ra-nav-icon { width: 18px; text-align: center; font-size: .95rem; }
+
+.ra-user {
+  display: flex; align-items: center; gap: .65rem;
+  padding: 1rem;
+  border-top: 1px solid var(--ra-border);
+}
+.ra-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--ra-accent); color: #06121f;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.ra-user-meta { overflow: hidden; }
+.ra-user-name {
+  font-size: .88rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ra-user-role { font-size: .75rem; color: var(--ra-muted); }
+
+/* --- main column --- */
+.ra-main { flex: 1; min-width: 0; }   /* min-width:0 lets a wide
+                                          table scroll instead of
+                                          stretching the layout */
+
+.ra-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.75rem;
+  border-bottom: 1px solid var(--ra-border);
+}
+.ra-crumb { display: flex; gap: .5rem; font-size: .9rem; }
+
+.ra-content { padding: 1.75rem; }
+
+.ra-title { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+
+/* --- status pills --- */
+.ra-pill {
+  font-size: .78rem; padding: .35rem .7rem;
+  border-radius: 6px; border: 1px solid;
+}
+.ra-pill-ok       { color: #4ade80; border-color: rgba(74,222,128,.35); background: rgba(74,222,128,.08); }
+.ra-pill-bad      { color: #f87171; border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.08); }
+.ra-pill-checking { color: var(--ra-muted); border-color: var(--ra-border); }
+
+.ra-btn-signout {
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,.3);
+  background: rgba(248,113,113,.06);
+}
+.ra-btn-signout:hover { background: rgba(248,113,113,.14); color: #f87171; }
+
+/* --- stat cards --- */
+.ra-stat {
+  background: var(--ra-surface);
+  border: 1px solid var(--ra-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  height: 100%;
+}
+.ra-stat-label {
+  font-size: .75rem; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--ra-muted); margin-bottom: .5rem;
+}
+.ra-stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.ra-stat-note { font-size: .8rem; color: var(--ra-muted); margin-top: .35rem; }
+
+/* --- modals --- */
+/* bootstrap modals are white by default, same problem as .card */
+.modal-content {
+  background: var(--ra-surface);
+  border: 1px solid var(--ra-border);
+  color: var(--ra-text);
+}
+.modal-header, .modal-footer { border-color: var(--ra-border); }
+.btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+/* --- responsive --- */
+/* below 992px the sidebar goes horizontal across the top rather
+   than eating half a phone screen */
+@media (max-width: 991px) {
+  .ra-shell { flex-direction: column; }
+  .ra-sidebar { width: 100%; height: auto; position: static; }
+  .ra-nav { display: flex; overflow-x: auto; padding: .5rem; }
+  .ra-nav-item { white-space: nowrap; }
+  .ra-user { display: none; }
+  .ra-content { padding: 1rem; }
+}
+/* ---- password show/hide ---------------------------------------------
+   the eye is absolutely positioned inside the field's wrapper so the
+   input keeps its full width and toggling doesn't reflow the form      */
+.pw-wrap{ position:relative; }
+.pw-wrap .form-control{ padding-right:44px; }
+.pw-toggle{
+  position:absolute; top:50%; right:6px; transform:translateY(-50%);
+  width:32px; height:32px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:none; border-radius:7px;
+  color:var(--ra-muted, #8b96ad); cursor:pointer;
+}
+.pw-toggle:hover{ color:#e8edf7; background:rgba(255,255,255,.06); }
+.pw-toggle svg{ width:18px; height:18px; }
+/* show one icon or the other, never both */
+.pw-toggle .pw-eye-off{ display:none; }
+.pw-toggle.is-visible .pw-eye{ display:none; }
+.pw-toggle.is-visible .pw-eye-off{ display:block; }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using RihlaAirways.Api.Data;
 using RihlaAirways.Api.Models;
 
@@ -22,10 +23,18 @@ public class UsersController : ControllerBase
     // DTO" and a bare record with no attributes only does half of that.
     // [ApiController] auto-returns 400 with the error list when these fail,
     // so we never have to check ModelState by hand
+    // same password rule as AuthController.RegisterDto - this was MinLength(6)
+    // while self-registration demanded 8, so the accounts with the MOST
+    // privilege (an admin creates Staff and Admin here) had the weakest rule
     public record UserCreateDto(
         [Required][MaxLength(100)] string Name,
         [Required][EmailAddress][MaxLength(150)] string Email,
-        [Required][MinLength(6)] string Password,
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+        [MaxLength(128)]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d).+$",
+            ErrorMessage = "Password must contain at least one letter and one number.")]
+        string Password,
         [Required] string Role);
 
     // no Role here on purpose - see the note on Update below
@@ -42,9 +51,15 @@ public class UsersController : ControllerBase
     //    forever on User -> Bookings -> User -> Bookings
     // every controller in this project needs its own version of this.
     // returning the raw entity is what causes the object-cycle crash
+    // PassportNumber used to be on this DTO, in full and unmasked. that quietly
+    // defeated all of the redaction work in PassengerProfilesController - staff
+    // there get PassportLast4 and the exact-match filter is Admin-only, but
+    // GET /api/users/{id} handed the whole number to ANY logged-in caller.
+    // a bool is all the admin list actually needs; the real number lives behind
+    // PassengerProfilesController where the owner/admin check is
     public record UserResponseDto(
         int Id, string Name, string Email, string Role, DateTime CreatedAt,
-        string? PassportNumber, int BookingCount);
+        bool HasPassengerProfile, int BookingCount);
 
     // one place that defines what a User looks like on the way out -
     // beats repeating the same Select in five endpoints.
@@ -57,12 +72,26 @@ public class UsersController : ControllerBase
     private static readonly Func<IQueryable<User>, IQueryable<UserResponseDto>> ToDto =
         q => q.Select(u => new UserResponseDto(
             u.Id, u.Name, u.Email, u.Role, u.CreatedAt,
-            u.PassengerProfile != null ? u.PassengerProfile.PassportNumber : null,
+            u.PassengerProfile != null,
             u.Bookings.Count));
 
     // valid roles - the string-not-enum decision means nothing stops
     // someone POSTing Role = "SuperAdmin" unless we check it ourselves
     private static readonly string[] ValidRoles = { "Passenger", "Staff", "Admin" };
+
+    // owner-or-admin. this is the check that was missing entirely on Update and
+    // GetById below - [Authorize] there only meant "logged in as anybody", so
+    // any passenger could PUT /api/users/1 and rewrite the ADMIN's email.
+    // since login is by email and there's no password-reset flow, that locks
+    // the real owner out of the system permanently.
+    // note Staff is NOT included: editing accounts is an admin job, and staff
+    // already have the operational read access they need elsewhere
+    private bool CanAccess(int targetUserId)
+    {
+        if (User.IsInRole("Admin")) return true;
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(raw, out var callerId) && callerId == targetUserId;
+    }
 
 
     // ============ 1. POST — create ============
@@ -103,7 +132,7 @@ public class UsersController : ControllerBase
         // created PasswordHash goes straight back to the client
         return CreatedAtAction(nameof(GetById), new { id = user.Id },
             new UserResponseDto(user.Id, user.Name, user.Email, user.Role,
-                                user.CreatedAt, null, 0));
+                                user.CreatedAt, false, 0));
     }
 
 
@@ -114,6 +143,11 @@ public class UsersController : ControllerBase
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null) return NotFound();
+
+        // you may edit YOUR OWN account, or any account if you're an Admin.
+        // without this line a passenger can rewrite the admin's email and lock
+        // them out of the whole system - see the note on CanAccess
+        if (!CanAccess(id)) return Forbid();
 
         // Role is deliberately NOT updatable here. it was in the original
         // version, which meant any logged-in passenger could PUT their own
@@ -128,7 +162,7 @@ public class UsersController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new UserResponseDto(user.Id, user.Name, user.Email,
-                                      user.Role, user.CreatedAt, null, 0));
+                                      user.Role, user.CreatedAt, false, 0));
     }
 
 
@@ -154,7 +188,7 @@ public class UsersController : ControllerBase
         // admin rights until their current token expires. that's the tradeoff
         // of stateless auth - the server never re-checks the db per request
         return Ok(new UserResponseDto(user.Id, user.Name, user.Email,
-                                      user.Role, user.CreatedAt, null, 0));
+                                      user.Role, user.CreatedAt, false, 0));
     }
 
 
@@ -204,6 +238,13 @@ public class UsersController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetById(int id)
     {
+        // GetAll above is Admin-only, but this one was bare [Authorize] - and
+        // ids are sequential, so walking /1, /2, /3... rebuilt the whole user
+        // table (every name, email, role) for any logged-in passenger, which
+        // made the restriction on GetAll pointless.
+        // 404 not 403, so "not yours" and "doesn't exist" look identical
+        if (!CanAccess(id)) return NotFound();
+
         var user = await ToDto(_context.Users.Where(u => u.Id == id))
             .FirstOrDefaultAsync();
 

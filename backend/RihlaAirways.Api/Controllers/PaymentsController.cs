@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using RihlaAirways.Api.Data;
 using RihlaAirways.Api.Models;
 using RihlaAirways.Api.Services;
@@ -74,6 +75,27 @@ public class PaymentsController : ControllerBase
     };
 
 
+    private bool IsStaff => User.IsInRole("Admin") || User.IsInRole("Staff");
+
+    // a Payment's owner is one hop away - Payment -> Booking -> UserId
+    private async Task<bool> CanAccessPayment(int paymentId)
+    {
+        if (IsStaff) return true;
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(raw, out var uid)) return false;
+        return await _context.Payments
+            .AnyAsync(p => p.Id == paymentId && p.Booking.UserId == uid);
+    }
+
+    private async Task<bool> CanAccessBooking(int bookingId)
+    {
+        if (IsStaff) return true;
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(raw, out var uid)) return false;
+        return await _context.Bookings.AnyAsync(b => b.Id == bookingId && b.UserId == uid);
+    }
+
+
     // ============ 1. POST — create ============
     [HttpPost]
     [Authorize]
@@ -84,6 +106,12 @@ public class PaymentsController : ControllerBase
 
         var booking = await _context.Bookings.FindAsync(dto.BookingId);
         if (booking == null) return BadRequest($"Booking {dto.BookingId} not found.");
+
+        // you may only pay for a booking you own. this check was missing, and
+        // because BookingId is UNIQUE below, a stranger posting a payment onto
+        // someone else's booking permanently blocked the real owner from paying
+        // it - they'd hit the 409 and only an Admin could clear it
+        if (!await CanAccessBooking(dto.BookingId)) return Forbid();
 
         // edge case first: Payments.BookingId is a UNIQUE index - that index
         // IS the one-to-one. a second payment on the same booking throws
@@ -116,7 +144,29 @@ public class PaymentsController : ControllerBase
         };
 
         _context.Payments.Add(payment);
+
+        // a Card payment settles immediately - this stands in for the gateway
+        // authorization a real integration would do here. it is NOT the client
+        // telling us it paid: Status is still server-assigned, the amount has
+        // already been matched against the booking total above, and Cash and
+        // BankTransfer deliberately stay Pending until someone at the desk
+        // confirms the money actually arrived.
+        //
+        // without this a passenger could book and pay online and still be stuck
+        // on Pending forever, because PATCH {id}/status is Admin,Staff only
+        var settledNow = dto.Method == "Card";
+        if (settledNow)
+        {
+            payment.Status = "Completed";
+            booking.Status = "Confirmed";   // same rule UpdateStatus applies
+        }
+
         await _context.SaveChangesAsync();
+
+        // e-ticket goes out after the save, same reasoning as UpdateStatus:
+        // never send a confirmation for a write that might still fail
+        if (settledNow)
+            await _email.SendBookingConfirmationAsync(payment.BookingId);
 
         var result = await ToDto(_context.Payments.Where(p => p.Id == payment.Id)).FirstAsync();
         return CreatedAtAction(nameof(GetById), new { id = payment.Id }, result);
@@ -244,6 +294,12 @@ public class PaymentsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetById(int id)
     {
+        // GetAll and Filter are correctly Admin,Staff - but this one was bare
+        // [Authorize] and payment ids are sequential, so any logged-in
+        // passenger could walk them and read every amount, method, status and
+        // customer name in the airline. 404 not 403, same reasoning as elsewhere
+        if (!await CanAccessPayment(id)) return NotFound();
+
         var payment = await ToDto(_context.Payments.Where(p => p.Id == id))
             .FirstOrDefaultAsync();
         return payment == null ? NotFound() : Ok(payment);

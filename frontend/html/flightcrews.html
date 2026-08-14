@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Airports — Rihla Airways</title>
+<title>Rosters — Rihla Airways</title>
 <link rel="stylesheet" href="../css/app.css?v=1786704245">
 </head>
 <body>
@@ -58,7 +58,7 @@
     <div class="topbar">
       <div class="topbar-left">
         <button class="hamburger" id="hamburger" type="button" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-        <div class="breadcrumb">Rihla Airways / <b id="crumb">Airports</b></div>
+        <div class="breadcrumb">Rihla Airways / <b id="crumb">Rosters</b></div>
       </div>
       <div class="topbar-right">
         <div class="pill pill-api" id="apiStatusPill"><span class="pill-dot"></span>Connected</div>
@@ -69,47 +69,85 @@
     <!-- GLOBAL ALERT AREA -->
     <div id="alert"></div>
 
-    <!-- ============ AIRPORTS ============ -->
-    <section id="page-airports">
+    <!-- ============ ROSTERS (FlightCrew) ============ -->
+    <section id="page-flightcrew">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Airports</h1>
-          <div class="page-sub">All connected airports and terminals</div>
+          <h1 class="page-title">Rosters</h1>
+          <div class="page-sub">Who is working which flight — crew assignments and duty roles</div>
         </div>
       </div>
-      <!-- hidden for roles that cannot write this resource -->
-      <div class="form-panel" data-requires-role="Admin">
-        <form id="airportForm" class="form-grid">
-          <input type="hidden" id="airportId">
-          <div class="form-group"><label>IATA Code</label><input type="text" id="airportCode" class="form-control" maxlength="3" required value="AUH"></div>
-          <div class="form-group"><label>Name</label><input type="text" id="airportName" class="form-control" required value="Zayed International Airport"></div>
-          <div class="form-group"><label>City</label><input type="text" id="airportCity" class="form-control" required value="Abu Dhabi"></div>
-          <div class="form-group"><label>Country</label><input type="text" id="airportCountry" class="form-control" required value="United Arab Emirates"></div>
-          <button type="submit" class="btn">Save Airport</button>
+
+      <div class="form-panel">
+        <form id="rosterForm" class="form-grid">
+          <input type="hidden" id="rosterId">
+          <div class="form-group">
+            <label>Flight</label>
+            <select id="rosterFlightId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label>Crew member</label>
+            <select id="rosterCrewId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label>Duty role</label>
+            <select id="rosterDutyRole" class="form-control" required>
+              <option value="Captain">Captain</option>
+              <option value="FirstOfficer">First Officer</option>
+              <option value="PurserCabinCrew">Purser / Cabin Crew</option>
+              <option value="CabinCrew">Cabin Crew</option>
+              <option value="FlightEngineer">Flight Engineer</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Assign to flight</button>
+          <button type="button" class="btn-outline" onclick="resetRosterForm()">Cancel edit</button>
         </form>
+        <div class="cell-dim" style="padding:0 4px 4px;">
+          Editing an existing assignment only changes the duty role — moving someone to a
+          different flight means deleting the assignment and creating a new one.
+        </div>
       </div>
 
       <details class="tool-block">
-        <summary>Filter airports</summary>
+        <summary>Filter rosters</summary>
         <div class="tool-body form-grid">
-          <div class="form-group"><label>Country contains</label><input type="text" id="fapCountry" class="form-control"></div>
-          <div class="form-group"><label>City contains</label><input type="text" id="fapCity" class="form-control"></div>
-          <div class="form-group"><label>Exact code</label><input type="text" id="fapCode" class="form-control" maxlength="3"></div>
-          <div class="form-group"><label>Search (code/name/city/country)</label><input type="text" id="fapSearch" class="form-control"></div>
-          <div class="form-group"><label><input type="checkbox" id="fapConnected"> Connected only (has routes)</label></div>
-          <button type="button" class="btn-outline" onclick="filterAirports()">Apply filter</button>
-          <button type="button" class="btn-outline" onclick="clearFilter(['fapCountry','fapCity','fapCode','fapSearch','fapConnected'], loadAirports)">Clear</button>
+          <div class="form-group"><label>Flight ID</label><input type="number" id="ffcFlightId" class="form-control"></div>
+          <div class="form-group"><label>Crew ID</label><input type="number" id="ffcCrewId" class="form-control"></div>
+          <div class="form-group"><label>Duty role</label>
+            <select id="ffcDutyRole" class="form-control">
+              <option value="">Any</option>
+              <option value="Captain">Captain</option>
+              <option value="FirstOfficer">FirstOfficer</option>
+              <option value="PurserCabinCrew">PurserCabinCrew</option>
+              <option value="CabinCrew">CabinCrew</option>
+              <option value="FlightEngineer">FlightEngineer</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Crew name contains</label><input type="text" id="ffcCrewName" class="form-control"></div>
+          <div class="form-group"><label>Departs from</label><input type="date" id="ffcFromDate" class="form-control"></div>
+          <div class="form-group"><label>Departs to</label><input type="date" id="ffcToDate" class="form-control"></div>
+          <button type="button" class="btn-outline" onclick="filterRosters()">Apply filter</button>
+          <button type="button" class="btn-outline" onclick="clearFilter(['ffcFlightId','ffcCrewId','ffcDutyRole','ffcCrewName','ffcFromDate','ffcToDate'], loadRosters)">Clear</button>
         </div>
       </details>
 
-      <div class="cards-grid" id="airportsGrid"></div>
-      <div id="airportsPager"></div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>ID</th><th>Flight</th><th>Departs</th><th>Crew</th><th>Job title</th><th>Duty role</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="rostersTable"></tbody>
+        </table>
+        <div id="rostersPager"></div>
+        <div class="cell-dim" style="padding:12px 20px;">
+          Passport, nationality and date of birth aren't in this view — a roster needs a name
+          and a licence, nothing more.
+        </div>
+      </div>
 
-      <details class="tool-block" style="margin-top:18px;">
-        <summary>Stats — by country, busiest hubs, unused</summary>
+      <details class="tool-block">
+        <summary>Stats — by duty role, busiest crew, understaffed flights</summary>
         <div class="tool-body">
-          <button type="button" class="btn-outline" onclick="loadStats('/airports/stats','airportsStats')">Load stats</button>
-          <div id="airportsStats" style="margin-top:14px;"></div>
+          <button type="button" class="btn-outline" onclick="loadStats('/flightcrews/stats','rosterStats')">Load stats</button>
+          <div id="rosterStats" style="margin-top:14px;"></div>
         </div>
       </details>
     </section>
@@ -120,6 +158,6 @@
 <script src="../js/ui.js?v=1786704245"></script>
 <script src="../js/auth.js?v=1786704245"></script>
 <script src="../js/common.js?v=1786704245"></script>
-<script src="../js/pages/airports.js?v=1786704245"></script>
+<script src="../js/pages/flightcrews.js?v=1786704245"></script>
 </body>
 </html>
