@@ -1,3 +1,7 @@
+// only roles that can write this resource get row actions - the API
+// enforces it too, this just stops the UI offering a guaranteed 403
+const canWrite = () => isStaffUser();
+
 // Flights page. Depends on api.js, auth.js and common.js being loaded first.
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -53,12 +57,14 @@ function renderFlightsTable(data) {
       <td>${statusBadge(f.status)}</td>
       <td>
         <div class="row-actions">
+          ${!canWrite() ? `<span class="cell-dim">—</span>` : `
           <button class="btn-outline" onclick="editFlight(${f.id})">Edit</button>
-          <select class="form-control" style="width:auto;display:inline-block;padding:4px 6px;" onchange="if(this.value){patchStatus('/flights/'+${f.id}+'/status',{status:this.value},[loadFlights]);this.value='';}">
+          <select class="select-inline" onchange="if(this.value){patchStatus('/flights/'+${f.id}+'/status',{status:this.value},[loadFlights]);this.value='';}">
             <option value="">Set status…</option>
             ${FLIGHT_STATUSES.filter(s => s !== f.status).map(s => `<option value="${s}">${s}</option>`).join("")}
           </select>
-          <button class="btn-outline-red" onclick="deleteFlight(${f.id})">Delete</button>
+          ${isAdminUser() ? `<button class="btn-outline-red" onclick="deleteFlight(${f.id})">Delete</button>` : ``}
+          `}
         </div>
       </td>
     </tr>
@@ -95,6 +101,6 @@ function editFlight(id) {
   window.scrollTo(0, 0);
 }
 async function deleteFlight(id) {
-  if (!confirm("Delete flight?")) return;
+  if (!await uiConfirm("Flights with sold tickets cannot be deleted — cancel them instead.", { title: "Delete flight", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/flights/${id}`); showAlert("Flight deleted.", "success"); loadFlights(); } catch (e) { showAlert(e.message); }
 }

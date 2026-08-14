@@ -73,8 +73,15 @@ public class BaggagesController : ControllerBase
 
 
     // ============ 1. POST — create ============
+    // staff-only: a bag record is created at the check-in desk, where the bag
+    // is actually weighed. this used to be [Authorize] + an ownership check,
+    // so a passenger could create their own bag row with any WeightKg they
+    // liked - and since CalculateFee below derives the fee from that weight,
+    // the excess-baggage charge was effectively self-assessed. declare 5kg,
+    // pay nothing, turn up with 30. passengers keep read access to their own
+    // bags via GetById
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> Create([FromBody] BaggageCreateDto dto)
     {
         if (!ValidTypes.Contains(dto.Type))
@@ -86,8 +93,6 @@ public class BaggagesController : ControllerBase
             .Include(t => t.Booking)
             .FirstOrDefaultAsync(t => t.Id == dto.TicketId);
         if (ticket == null) return BadRequest($"Ticket {dto.TicketId} not found.");
-
-        if (!CanAccess(ticket.Booking.UserId)) return Forbid();
 
         if (ticket.Flight.Status is "Departed" or "Landed")
             return Conflict("Cannot add baggage to a flight that has already departed.");

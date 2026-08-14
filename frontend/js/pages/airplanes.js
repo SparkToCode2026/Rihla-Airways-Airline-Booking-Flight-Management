@@ -69,6 +69,6 @@ function editAirplane(id) {
   window.scrollTo(0, 0);
 }
 async function deleteAirplane(id) {
-  if (!confirm("Delete airplane?")) return;
+  if (!await uiConfirm("Aircraft assigned to a flight cannot be removed.", { title: "Delete airplane", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/airplanes/${id}`); showAlert("Airplane deleted.", "success"); loadAirplanes(); } catch (e) { showAlert(e.message); }
 }

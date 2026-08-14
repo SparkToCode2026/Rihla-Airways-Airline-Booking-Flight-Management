@@ -47,7 +47,7 @@ function renderUsersTable(data) {
       <td>
         <div class="row-actions">
           <button class="btn-outline" onclick="editUser(${u.id})">Edit</button>
-          <select class="form-control" style="width:auto;display:inline-block;padding:4px 6px;" onchange="if(this.value){patchStatus('/users/'+${u.id}+'/role',{role:this.value},[loadUsers]);this.value='';}">
+          <select class="select-inline" onchange="if(this.value){patchStatus('/users/'+${u.id}+'/role',{role:this.value},[loadUsers]);this.value='';}">
             <option value="">Change role…</option>
             ${USER_ROLES.filter(r => r !== u.role).map(r => `<option value="${r}">${r}</option>`).join("")}
           </select>
@@ -94,6 +94,6 @@ function resetUserFormMode() {
   document.getElementById("userFormBtn").textContent = "Create User";
 }
 async function deleteUser(id) {
-  if (!confirm("Delete user?")) return;
+  if (!await uiConfirm("Users with bookings cannot be deleted.", { title: "Delete user", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/users/${id}`); showAlert("User deleted.", "success"); loadUsers(); } catch (e) { showAlert(e.message); }
 }

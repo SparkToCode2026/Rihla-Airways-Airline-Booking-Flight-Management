@@ -1,3 +1,7 @@
+// only roles that can write this resource get row actions - the API
+// enforces it too, this just stops the UI offering a guaranteed 403
+const canWrite = () => isAdminUser();
+
 // Seat Classes page. Depends on api.js, auth.js and common.js being loaded first.
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -34,8 +38,7 @@ function renderSeatClassesTable(data) {
       <td>x${sc.priceMultiplier}</td>
       <td>${sc.baggageAllowanceKg} kg</td>
       <td>
-        <button class="btn-outline" onclick="editSeatClass(${sc.id})">Edit</button>
-        <button class="btn-outline-red" onclick="deleteSeatClass(${sc.id})">Delete</button>
+        ${canWrite() ? `<button class="btn-outline" onclick="editSeatClass(${sc.id})">Edit</button><button class="btn-outline-red" onclick="deleteSeatClass(${sc.id})">Delete</button>` : `<span class="cell-dim">—</span>`}
       </td>
     </tr>
   `).join("");
@@ -67,6 +70,6 @@ function editSeatClass(id) {
   window.scrollTo(0, 0);
 }
 async function deleteSeatClass(id) {
-  if (!confirm("Delete seat class?")) return;
+  if (!await uiConfirm("Seat classes are referenced by existing tickets, so this may be refused.", { title: "Delete seat class", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/seatclasses/${id}`); showAlert("Seat class deleted.", "success"); loadSeatClasses(); } catch (e) { showAlert(e.message); }
 }

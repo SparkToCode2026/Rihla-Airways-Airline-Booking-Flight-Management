@@ -307,7 +307,11 @@ details.tool-block .tool-body{ padding: 4px 18px 18px; }
   .cards-grid{ grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width: 720px){
-  .sidebar{ display:none; }
+  /* NOTE: this used to be `.sidebar{ display:none; }` - the original mobile
+     behaviour was simply to delete the navigation below 720px, with no way to
+     get it back. the off-canvas drawer further down replaces that, and a
+     display:none here would beat it (the drawer only sets transform, so
+     display was never overridden and the panel stayed unrenderable). */
   .stat-grid{ grid-template-columns: 1fr; }
   .cards-grid{ grid-template-columns: 1fr; }
   .main{ padding: 18px; }
@@ -316,3 +320,364 @@ details.tool-block .tool-body{ padding: 4px 18px 18px; }
 ::-webkit-scrollbar{ width:8px; height:8px; }
 ::-webkit-scrollbar-thumb{ background: var(--border); border-radius:4px; }
 ::-webkit-scrollbar-track{ background: transparent; }
+
+/* a stat card the current role is not allowed to read. dashboard.js adds this
+   instead of rendering a 403 as the number 0 */
+.stat-unavailable { opacity: .55; }
+.stat-unavailable .stat-value { color: var(--muted, #8b95a5); }
+
+/* ============================================================
+   LAYOUT: fixed shell, scrolling content
+   the whole document used to scroll, which took the sidebar and
+   the topbar with it. now the app is exactly one viewport tall and
+   only .main scrolls, so navigation stays put while a long table
+   moves underneath it
+   ============================================================ */
+.app{ height:100vh; overflow:hidden; }
+.sidebar{ height:100vh; overflow-y:auto; overflow-x:hidden; }
+.main{ height:100vh; overflow-y:auto; }
+
+/* thin scrollbar inside the sidebar so a long nav doesn't get a fat bar */
+.sidebar::-webkit-scrollbar{ width:6px; }
+.sidebar::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px; }
+
+/* the topbar sticks to the top of the SCROLLING area, so the
+   breadcrumb and sign-out stay reachable however far down you are */
+.topbar{
+  position:sticky; top:0; z-index:30;
+  background:var(--bg);
+  padding: 4px 0 14px;
+  margin-bottom:12px;
+  border-bottom:1px solid var(--border-soft);
+}
+
+
+/* ============================================================
+   FORM CONTROLS: unified select
+   a bare <select> is drawn by the OS - light grey on macOS, a
+   different shape on Windows - so it broke the dark theme on every
+   page. appearance:none removes the native widget and we draw our
+   own caret with a background svg
+   ============================================================ */
+select.form-control,
+select.select-inline{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  background-color: var(--panel);
+  color: var(--text);
+  border:1px solid var(--border-soft);
+  border-radius:6px;
+  font-size:13px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b96ad' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat:no-repeat;
+  background-position: right 10px center;
+  background-size: 15px;
+  padding: 9px 32px 9px 12px;
+  cursor:pointer;
+  width:100%;
+}
+select.form-control:hover:not(:disabled),
+select.select-inline:hover:not(:disabled){ border-color:var(--border); }
+select.form-control:focus,
+select.select-inline:focus{ border-color:var(--accent); outline:none; }
+select.form-control:disabled,
+select.select-inline:disabled{ opacity:.5; cursor:not-allowed; }
+
+/* the compact variant used inside table rows. this replaces three copies of
+   an inline style="width:auto;padding:4px 6px" - that padding overrode the
+   padding-right the caret needs, so the arrow sat on top of the label */
+select.select-inline{
+  width:auto;
+  display:inline-block;
+  padding: 5px 28px 5px 10px;
+  font-size:12.5px;
+  background-position: right 8px center;
+  background-size: 13px;
+  background-color: var(--panel-2);
+}
+
+/* the dropdown LIST itself is OS-drawn and can't be styled - setting
+   these at least stops it rendering as white-on-white in dark mode */
+select.form-control option,
+select.select-inline option{ background:var(--panel-2); color:var(--text); }
+
+
+/* ============================================================
+   MODAL - replaces window.confirm / window.prompt
+   ============================================================ */
+.ui-overlay{
+  position:fixed; inset:0; z-index:200;
+  background: rgba(3,7,18,0.72);
+  backdrop-filter: blur(3px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  animation: uiFade .14s ease;
+}
+@keyframes uiFade{ from{opacity:0} to{opacity:1} }
+
+.ui-modal{
+  width:100%; max-width:420px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  animation: uiRise .16s ease;
+}
+@keyframes uiRise{ from{opacity:0; transform:translateY(8px) scale(.98)} to{opacity:1; transform:none} }
+
+.ui-modal-head{ padding:18px 20px 0; }
+.ui-modal-head h3{ margin:0; font-size:16px; font-weight:700; }
+.ui-modal-body{ padding:10px 20px 4px; }
+.ui-modal-msg{ margin:0 0 12px; color:var(--text-dim); font-size:13.5px; line-height:1.55; }
+.ui-modal-foot{
+  display:flex; justify-content:flex-end; gap:8px;
+  padding:16px 20px 18px;
+}
+.btn-danger{
+  background:var(--red); color:#1b0d0d; border:none;
+  padding:9px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;
+}
+.btn-danger:hover{ filter:brightness(1.08); }
+
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.ui-toast-stack{
+  position:fixed; right:18px; bottom:18px; z-index:250;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+}
+.ui-toast{
+  padding:11px 16px; border-radius:10px;
+  font-size:13px; font-weight:600;
+  border:1px solid var(--border);
+  background:var(--panel);
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+  opacity:0; transform:translateY(8px);
+  transition:opacity .2s ease, transform .2s ease;
+  max-width:340px;
+}
+.ui-toast.is-in{ opacity:1; transform:none; }
+.ui-toast-success{ border-color:rgba(52,211,153,.4); color:var(--green); background:var(--green-bg); }
+.ui-toast-danger{ border-color:rgba(248,113,113,.4); color:var(--red); background:var(--red-bg); }
+.ui-toast-info{ border-color:rgba(56,189,248,.4); color:var(--accent); background:var(--blue-bg); }
+
+
+/* ============================================================
+   MOBILE: off-canvas sidebar + hamburger
+   ============================================================ */
+.hamburger{
+  display:none;
+  background:var(--panel-2); border:1px solid var(--border);
+  color:var(--text); border-radius:9px;
+  width:38px; height:38px; cursor:pointer;
+  align-items:center; justify-content:center;
+  flex-shrink:0; margin-right:10px;
+}
+.hamburger:hover{ border-color:var(--accent); }
+.hamburger svg{ width:18px; height:18px; }
+.sidebar-scrim{ display:none; }
+
+@media (max-width: 900px){
+  .hamburger{ display:flex; }
+
+  /* slide the sidebar off screen and float it over the content when
+     opened, rather than letting it eat half a narrow viewport */
+  .sidebar{
+    position:fixed; top:0; left:0; bottom:0; z-index:120;
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    box-shadow: 0 0 40px rgba(0,0,0,.5);
+  }
+  /* body.drawer-open is the single switch - one class drives the panel and
+     the scrim together so they can't get out of step */
+  body.drawer-open .sidebar{ transform:none; }
+  /* the desktop collapse toggle makes no sense in the drawer */
+  .sidebar .collapse-btn{ display:none; }
+  /* ...and a sidebar left in the collapsed desktop state would open as a
+     74px stub, so ignore it at mobile width */
+  .sidebar.collapsed{ width:260px; }
+  .sidebar.collapsed .brand-name,
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .user-info{ display:revert; }
+
+  .sidebar-scrim{
+    display:block; position:fixed; inset:0; z-index:110;
+    background:rgba(3,7,18,.6);
+    opacity:0; pointer-events:none; transition:opacity .22s ease;
+  }
+  body.drawer-open .sidebar-scrim{ opacity:1; pointer-events:auto; }
+  /* stop the page behind the drawer scrolling under your finger */
+  body.drawer-open{ overflow:hidden; }
+
+  .main{ padding: 18px 16px 32px; }
+  .topbar{ gap:8px; }
+  .breadcrumb{ font-size:12px; }
+
+  /* wide tables scroll inside their own card instead of pushing the
+     whole page sideways */
+  .table-card{ overflow-x:auto; }
+  .form-grid{ flex-direction:column; align-items:stretch; }
+  .form-grid .form-group{ width:100%; }
+}
+
+@media (max-width: 560px){
+  .stat-grid{ grid-template-columns: 1fr 1fr; }
+  .two-col{ grid-template-columns: 1fr; }
+  .page-title{ font-size:24px; }
+}
+
+/* left group in the topbar: hamburger + breadcrumb travel together */
+.topbar-left{ display:flex; align-items:center; min-width:0; }
+.topbar-left .breadcrumb{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* the sidebar user block is a link to the profile page now */
+.user-row-link{ text-decoration:none; color:inherit; display:block; border-radius:8px; }
+.user-row-link:hover{ background:var(--panel-2); }
+
+/* ============================================================
+   SEAT MAP
+   the seat field used to be a free-text box, so you typed "12C"
+   and found out it was taken only after the POST came back 409.
+   this draws the actual cabin from the flight's capacity and the
+   seats already sold on it
+   ============================================================ */
+.seatmap{
+  border:1px solid var(--border); border-radius:12px;
+  background:var(--panel-2);
+  padding:14px; margin-top:6px;
+  max-height:260px; overflow-y:auto;
+}
+.seatmap-legend{
+  display:flex; gap:16px; flex-wrap:wrap;
+  font-size:12px; color:var(--text-dim); margin-bottom:12px;
+}
+.seatmap-legend span{ display:flex; align-items:center; gap:6px; }
+.legend-box{ width:13px; height:13px; border-radius:4px; border:1px solid var(--border); }
+.legend-free{ background:var(--panel); }
+.legend-taken{ background:var(--border); }
+.legend-picked{ background:var(--accent); border-color:var(--accent); }
+
+.seat-row{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.seat-row-no{ width:26px; font-size:11px; color:var(--text-faint); text-align:right; flex-shrink:0; }
+.seat-aisle{ width:14px; flex-shrink:0; }
+
+.seat{
+  width:30px; height:30px; flex-shrink:0;
+  border-radius:6px; border:1px solid var(--border);
+  background:var(--panel); color:var(--text-dim);
+  font-size:11px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: background .12s ease, color .12s ease, transform .08s ease;
+}
+.seat:hover:not(.is-taken){ border-color:var(--accent); color:var(--text); }
+.seat.is-taken{
+  background:var(--border); color:var(--text-faint);
+  cursor:not-allowed; text-decoration:line-through;
+}
+.seat.is-picked{
+  background:var(--accent); border-color:var(--accent);
+  color:#062032; transform:scale(1.06);
+}
+.seat.is-mine{ border-color:var(--green); color:var(--green); }
+.seatmap-empty{ color:var(--text-dim); font-size:13px; padding:8px 2px; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pager{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap;
+  padding:12px 18px; border-top:1px solid var(--border-soft);
+}
+.pager-info{ font-size:12.5px; color:var(--text-dim); }
+.pager-controls{ display:flex; align-items:center; gap:4px; }
+.pager-btn{
+  min-width:32px; height:32px; padding:0 9px;
+  background:var(--panel-2); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:7px;
+  font-size:12.5px; font-weight:600; cursor:pointer;
+}
+.pager-btn:hover:not(:disabled){ border-color:var(--accent); color:var(--text); }
+.pager-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.pager-btn.is-current{
+  background:var(--accent); border-color:var(--accent); color:#062032;
+}
+.pager-size{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-dim); }
+.pager-size select{ padding:5px 26px 5px 9px; font-size:12.5px; }
+
+/* ============================================================
+   BOOKING FLOW STEPPER
+   shown while a passenger is mid-journey (book -> seats -> pay)
+   ============================================================ */
+.flow-bar{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:12px; padding:14px 18px; margin-bottom:18px;
+}
+.flow-steps{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.flow-step{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text-faint); }
+.flow-step .flow-dot{
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700;
+  background:var(--panel-2); border:1px solid var(--border); color:var(--text-faint);
+}
+.flow-step.is-done{ color:var(--green); }
+.flow-step.is-done .flow-dot{ background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.flow-step.is-active{ color:var(--text); font-weight:600; }
+.flow-step.is-active .flow-dot{ background:var(--accent); border-color:var(--accent); color:#062032; }
+.flow-sep{ color:var(--text-faint); }
+.flow-actions{ margin-left:auto; display:flex; gap:8px; }
+
+/* row we've just been sent to, so it's findable in a long table */
+tr.is-highlighted{ background:var(--blue-bg); }
+
+/* .form-grid is a GRID, so flex-basis does nothing on its children - a child
+   that needs the full width has to span every column explicitly */
+.form-grid .span-all{ grid-column: 1 / -1; }
+
+/* ============================================================
+   DASHBOARD WIDGETS
+   ============================================================ */
+.next-trip{
+  background: linear-gradient(135deg, rgba(56,189,248,.14), rgba(99,102,241,.10));
+  border:1px solid var(--border); border-radius:14px; padding:18px 20px;
+}
+.next-trip-route{ display:flex; align-items:center; gap:14px; margin:10px 0 4px; }
+.next-trip-code{ font-size:26px; font-weight:800; letter-spacing:-.5px; }
+.next-trip-arrow{ color:var(--accent); font-size:18px; }
+.next-trip-meta{ color:var(--text-dim); font-size:13px; }
+.next-trip-countdown{
+  display:inline-block; margin-top:10px; padding:5px 12px; border-radius:20px;
+  background:var(--blue-bg); color:var(--accent); font-size:12px; font-weight:700;
+}
+
+.attention-list{ display:flex; flex-direction:column; }
+.attention-row{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 18px; border-bottom:1px solid var(--border-soft);
+}
+.attention-row:last-child{ border-bottom:none; }
+.attention-icon{
+  width:28px; height:28px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:13px;
+}
+.attention-warn{ background:var(--amber-bg); color:var(--amber); }
+.attention-bad{ background:var(--red-bg); color:var(--red); }
+.attention-ok{ background:var(--green-bg); color:var(--green); }
+.attention-body{ flex:1; min-width:0; }
+.attention-title{ font-size:13.5px; font-weight:600; }
+.attention-sub{ font-size:12px; color:var(--text-dim); }
+
+.mini-bars{ padding:6px 18px 16px; }
+.mini-bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:9px; font-size:12.5px; }
+.mini-bar-label{ width:88px; color:var(--text-dim); flex-shrink:0; }
+.mini-bar-track{ flex:1; height:8px; border-radius:4px; background:var(--panel-2); overflow:hidden; }
+.mini-bar-fill{ height:100%; border-radius:4px; background:var(--accent); }
+.mini-bar-value{ width:34px; text-align:right; font-weight:700; }
+
+/* a pager under a card grid rather than inside a table card - no card border
+   to butt against, so drop the divider and the inset padding */
+.cards-grid + div .pager{ border-top:none; padding-left:0; padding-right:0; }

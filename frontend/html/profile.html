@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Airports — Rihla Airways</title>
+<title>My Profile — Rihla Airways</title>
 <link rel="stylesheet" href="../css/app.css?v=1786704245">
 </head>
 <body>
@@ -58,7 +58,7 @@
     <div class="topbar">
       <div class="topbar-left">
         <button class="hamburger" id="hamburger" type="button" aria-label="Toggle navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-        <div class="breadcrumb">Rihla Airways / <b id="crumb">Airports</b></div>
+        <div class="breadcrumb">Rihla Airways / <b id="crumb">My Profile</b></div>
       </div>
       <div class="topbar-right">
         <div class="pill pill-api" id="apiStatusPill"><span class="pill-dot"></span>Connected</div>
@@ -69,49 +69,66 @@
     <!-- GLOBAL ALERT AREA -->
     <div id="alert"></div>
 
-    <!-- ============ AIRPORTS ============ -->
-    <section id="page-airports">
+    <!-- ============ PROFILE ============ -->
+    <section id="page-profile">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Airports</h1>
-          <div class="page-sub">All connected airports and terminals</div>
+          <h1 class="page-title">My Profile</h1>
+          <div class="page-sub">Your account and travel details</div>
         </div>
       </div>
-      <!-- hidden for roles that cannot write this resource -->
-      <div class="form-panel" data-requires-role="Admin">
-        <form id="airportForm" class="form-grid">
-          <input type="hidden" id="airportId">
-          <div class="form-group"><label>IATA Code</label><input type="text" id="airportCode" class="form-control" maxlength="3" required value="AUH"></div>
-          <div class="form-group"><label>Name</label><input type="text" id="airportName" class="form-control" required value="Zayed International Airport"></div>
-          <div class="form-group"><label>City</label><input type="text" id="airportCity" class="form-control" required value="Abu Dhabi"></div>
-          <div class="form-group"><label>Country</label><input type="text" id="airportCountry" class="form-control" required value="United Arab Emirates"></div>
-          <button type="submit" class="btn">Save Airport</button>
-        </form>
+
+      <div class="two-col">
+        <!-- account: name + email, editable by the owner -->
+        <div class="card">
+          <div class="panel-head"><h3>Account</h3></div>
+          <div style="padding:0 18px 18px;">
+            <form id="accountForm" class="form-grid">
+              <div class="form-group"><label>Full name</label>
+                <input type="text" id="accName" class="form-control" required maxlength="100"></div>
+              <div class="form-group"><label>Email</label>
+                <input type="email" id="accEmail" class="form-control" required maxlength="150"></div>
+              <button type="submit" class="btn">Save account</button>
+            </form>
+            <div class="cell-dim" style="margin-top:12px;">
+              Signed in as <b id="accRole">—</b> · member since <span id="accSince">—</span>
+              <br>Changing your email changes the address you sign in with.
+            </div>
+          </div>
+        </div>
+
+        <!-- travel document: passengers only, and only their own -->
+        <div class="card" id="profileCard">
+          <div class="panel-head"><h3>Travel document</h3></div>
+          <div style="padding:0 18px 18px;">
+            <div id="profileEmpty" class="cell-dim" style="display:none;">
+              You don't have a passenger profile yet. Add your passport details so
+              they're on file when you book.
+            </div>
+            <form id="profileForm" class="form-grid">
+              <div class="form-group"><label>Passport number</label>
+                <input type="text" id="pfPassport" class="form-control" required maxlength="50"></div>
+              <div class="form-group"><label>Nationality</label>
+                <input type="text" id="pfNationality" class="form-control" required maxlength="100"></div>
+              <div class="form-group"><label>Date of birth</label>
+                <input type="date" id="pfDob" class="form-control" required></div>
+              <div class="form-group"><label>Phone</label>
+                <input type="tel" id="pfPhone" class="form-control" required maxlength="20"></div>
+              <button type="submit" class="btn" id="pfSubmit">Save details</button>
+            </form>
+          </div>
+        </div>
       </div>
 
-      <details class="tool-block">
-        <summary>Filter airports</summary>
-        <div class="tool-body form-grid">
-          <div class="form-group"><label>Country contains</label><input type="text" id="fapCountry" class="form-control"></div>
-          <div class="form-group"><label>City contains</label><input type="text" id="fapCity" class="form-control"></div>
-          <div class="form-group"><label>Exact code</label><input type="text" id="fapCode" class="form-control" maxlength="3"></div>
-          <div class="form-group"><label>Search (code/name/city/country)</label><input type="text" id="fapSearch" class="form-control"></div>
-          <div class="form-group"><label><input type="checkbox" id="fapConnected"> Connected only (has routes)</label></div>
-          <button type="button" class="btn-outline" onclick="filterAirports()">Apply filter</button>
-          <button type="button" class="btn-outline" onclick="clearFilter(['fapCountry','fapCity','fapCode','fapSearch','fapConnected'], loadAirports)">Clear</button>
-        </div>
-      </details>
-
-      <div class="cards-grid" id="airportsGrid"></div>
-      <div id="airportsPager"></div>
-
-      <details class="tool-block" style="margin-top:18px;">
-        <summary>Stats — by country, busiest hubs, unused</summary>
-        <div class="tool-body">
-          <button type="button" class="btn-outline" onclick="loadStats('/airports/stats','airportsStats')">Load stats</button>
-          <div id="airportsStats" style="margin-top:14px;"></div>
-        </div>
-      </details>
+      <!-- quick view of the caller's own travel history -->
+      <div class="table-card" style="margin-top:18px;">
+        <div class="panel-head"><h3>My bookings</h3>
+          <a class="view-all" href="bookings.html">View all →</a></div>
+        <table>
+          <thead><tr><th>ID</th><th>Booked</th><th>Total</th><th>Status</th><th>Payment</th></tr></thead>
+          <tbody id="profileBookings"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 </div>
@@ -120,6 +137,6 @@
 <script src="../js/ui.js?v=1786704245"></script>
 <script src="../js/auth.js?v=1786704245"></script>
 <script src="../js/common.js?v=1786704245"></script>
-<script src="../js/pages/airports.js?v=1786704245"></script>
+<script src="../js/pages/profile.js?v=1786704245"></script>
 </body>
 </html>

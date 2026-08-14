@@ -83,6 +83,6 @@ function editPayment(id) {
   window.scrollTo(0, 0);
 }
 async function deletePayment(id) {
-  if (!confirm("Delete payment?")) return;
+  if (!await uiConfirm("Settled payments cannot be deleted — the financial record must survive.", { title: "Delete payment", confirmLabel: "Delete", danger: true })) return;
   try { await api.del(`/payments/${id}`); showAlert("Payment deleted.", "success"); loadPayments(); } catch (e) { showAlert(e.message); }
 }

@@ -3,6 +3,27 @@
 // api.js (the `auth` object) - this file is only the page wiring
 // ============================================================
 
+// show/hide the password. flipping the input's type is the whole trick -
+// the two icons are both in the DOM and CSS shows one at a time.
+// aria-pressed is what a screen reader reads out, so it has to track the
+// real state rather than just the icon
+function wirePasswordToggle(inputId, buttonId) {
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(buttonId);
+  if (!input || !btn) return;
+
+  btn.addEventListener("click", () => {
+    const nowVisible = input.type === "password";
+    input.type = nowVisible ? "text" : "password";
+    btn.classList.toggle("is-visible", nowVisible);
+    btn.setAttribute("aria-pressed", String(nowVisible));
+    btn.setAttribute("aria-label", nowVisible ? "Hide password" : "Show password");
+    // keep the caret where it was - toggling type otherwise drops focus
+    input.focus({ preventScroll: true });
+  });
+}
+
+
 function initLogin() {
   // already signed in? skip the form. otherwise hitting back after
   // logging in dumps you on a login page while holding a valid token
@@ -14,6 +35,8 @@ function initLogin() {
 
   const form = document.getElementById("loginForm");
   const btn = document.getElementById("submitBtn");
+
+  wirePasswordToggle("password", "pwToggle");
 
   form.addEventListener("submit", async (e) => {
     // WITHOUT this the browser does a full page reload and the
@@ -56,6 +79,8 @@ function initRegister() {
 
   const form = document.getElementById("registerForm");
   const btn = document.getElementById("submitBtn");
+
+  wirePasswordToggle("password", "pwToggle");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();

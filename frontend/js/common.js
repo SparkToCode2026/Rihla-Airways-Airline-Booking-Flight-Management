@@ -34,8 +34,206 @@ const PAGE_ROLES = {
   baggage: ["Admin", "Staff"],
   airplanes: ["Admin", "Staff"],
   crew: ["Admin", "Staff"],
+  // FlightCrewsController is Admin,Staff on all 8 endpoints
+  flightcrew: ["Admin", "Staff"],
   users: ["Admin"]
 };
+
+// role helpers. pages use these to show only the actions the caller can
+// actually perform - a button that's guaranteed to come back 403 is worse
+// than no button. cosmetic only, exactly like PAGE_ROLES above: the server
+// enforces every one of these rules regardless of what the UI renders
+function isStaffUser() {
+  const me = auth.getUser();
+  return !!me && (me.role === "Admin" || me.role === "Staff");
+}
+
+function isAdminUser() {
+  const me = auth.getUser();
+  return !!me && me.role === "Admin";
+}
+
+
+// ---------- mobile drawer ----------
+// under 900px the sidebar is positioned off-canvas by CSS and this slides it
+// back in. `body.drawer-open` is what actually drives the CSS rather than a
+// class on the sidebar itself: the body always exists, so there is no way for
+// the toggle to silently no-op on a page whose markup differs, and one class
+// drives both the panel and the scrim so they can never disagree.
+function wireMobileDrawer() {
+  const burger = document.getElementById("hamburger");
+  if (!burger) return;
+
+  const isOpen = () => document.body.classList.contains("drawer-open");
+
+  const setDrawer = (open) => {
+    document.body.classList.toggle("drawer-open", open);
+    burger.setAttribute("aria-expanded", String(open));
+  };
+
+  burger.addEventListener("click", (e) => {
+    // stopPropagation matters: the scrim becomes interactive the instant the
+    // drawer opens, and without this the same gesture can read as a tap
+    // outside and close it again
+    e.preventDefault();
+    e.stopPropagation();
+    setDrawer(!isOpen());
+  });
+
+  // resolved at click time rather than captured at init, so this survives any
+  // page that renders its shell later
+  document.addEventListener("click", (e) => {
+    if (!isOpen()) return;
+    if (e.target.closest("#sidebarScrim")) setDrawer(false);
+    // following a nav link should navigate AND put the drawer away
+    if (e.target.closest(".nav-item")) setDrawer(false);
+  });
+
+  document.addEventListener("keydown", e => { if (e.key === "Escape") setDrawer(false); });
+
+  // leaving mobile width with the drawer open would otherwise strand the
+  // body class and pin the sidebar over the content on desktop
+  window.matchMedia("(min-width: 901px)").addEventListener("change", (m) => {
+    if (m.matches) setDrawer(false);
+  });
+}
+
+
+// ---------- booking flow ----------
+// a booking is only useful once it has a flight on it and has been paid for,
+// but those are three separate pages. this renders the "you are here" bar so
+// someone mid-journey can see what's left instead of being dropped back on a
+// list with a 0.00 booking and no idea what to do next.
+// `step` is 1 = booking made, 2 = choosing flights/seats, 3 = payment
+function renderFlowBar(mountId, step, bookingId, { total = null } = {}) {
+  const mount = document.getElementById(mountId);
+  if (!mount) return;
+
+  const steps = [
+    { n: 1, label: "Booking created" },
+    { n: 2, label: "Add flights & seats" },
+    { n: 3, label: "Pay" }
+  ];
+
+  const cls = s => s.n < step ? "is-done" : s.n === step ? "is-active" : "";
+  const dot = s => s.n < step ? "✓" : s.n;
+
+  const next = step === 2
+    ? `<a class="btn" href="bookings.html?pay=${bookingId}">
+         ${total ? `Continue to payment · ${formatMoney(total)}` : "Continue to payment"}
+       </a>`
+    : "";
+
+  mount.innerHTML = `
+    <div class="flow-bar">
+      <div class="flow-steps">
+        ${steps.map((s, i) =>
+          `${i ? `<span class="flow-sep">›</span>` : ""}
+           <span class="flow-step ${cls(s)}">
+             <span class="flow-dot">${dot(s)}</span>${s.label}
+           </span>`).join("")}
+      </div>
+      <div class="flow-actions">
+        <span class="cell-dim" style="align-self:center;">Booking #${bookingId}</span>
+        ${next}
+      </div>
+    </div>`;
+}
+
+
+// ---------- client-side pagination ----------
+// most list endpoints return the whole table in one go (only /flights
+// paginates server-side), so this slices the array the page already has.
+// that's the right trade at this data volume - it keeps filtering and
+// sorting instant, and there's no round trip to change page.
+//
+// usage:
+//   const pager = createPager({ pageSize: 10, onRender: renderRoutesTable });
+//   pager.setData(rows);                     // after every load/filter
+//   <tbody id="x"></tbody><div id="routesPager"></div>
+function createPager({ pageSize = 10, onRender, mountId }) {
+  let rows = [];
+  let page = 1;
+  let size = pageSize;
+
+  function totalPages() {
+    return Math.max(1, Math.ceil(rows.length / size));
+  }
+
+  function slice() {
+    const start = (page - 1) * size;
+    return rows.slice(start, start + size);
+  }
+
+  // 1 … 4 5 [6] 7 8 … 20 - keeps the control a fixed width however many
+  // pages there are, instead of rendering 200 buttons
+  function pageNumbers() {
+    const last = totalPages();
+    const out = new Set([1, last, page, page - 1, page + 1]);
+    const nums = [...out].filter(n => n >= 1 && n <= last).sort((a, b) => a - b);
+    const withGaps = [];
+    nums.forEach((n, i) => {
+      if (i && n - nums[i - 1] > 1) withGaps.push("…");
+      withGaps.push(n);
+    });
+    return withGaps;
+  }
+
+  function renderControls() {
+    const mount = document.getElementById(mountId);
+    if (!mount) return;
+
+    if (!rows.length) { mount.innerHTML = ""; return; }
+
+    const last = totalPages();
+    const from = (page - 1) * size + 1;
+    const to = Math.min(page * size, rows.length);
+
+    mount.innerHTML = `
+      <div class="pager">
+        <div class="pager-info">Showing <b>${from}–${to}</b> of <b>${rows.length}</b></div>
+        <div class="pager-controls">
+          <button class="pager-btn" data-goto="prev" ${page === 1 ? "disabled" : ""}>‹</button>
+          ${pageNumbers().map(n => n === "…"
+            ? `<span class="pager-info">…</span>`
+            : `<button class="pager-btn ${n === page ? "is-current" : ""}" data-goto="${n}">${n}</button>`
+          ).join("")}
+          <button class="pager-btn" data-goto="next" ${page === last ? "disabled" : ""}>›</button>
+        </div>
+        <label class="pager-size">Per page
+          <select class="form-control" data-pagesize>
+            ${[10, 25, 50].map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("")}
+          </select>
+        </label>
+      </div>`;
+
+    mount.querySelectorAll("[data-goto]").forEach(btn =>
+      btn.addEventListener("click", () => {
+        const v = btn.dataset.goto;
+        page = v === "prev" ? Math.max(1, page - 1)
+             : v === "next" ? Math.min(last, page + 1)
+             : Number(v);
+        draw();
+      }));
+
+    mount.querySelector("[data-pagesize]")?.addEventListener("change", e => {
+      size = Number(e.target.value);
+      page = 1;
+      draw();
+    });
+  }
+
+  function draw() {
+    onRender(slice());
+    renderControls();
+  }
+
+  return {
+    setData(next) { rows = next || []; page = 1; draw(); },
+    refresh: draw
+  };
+}
+
 
 // call once at the top of every app page's DOMContentLoaded handler,
 // passing the page's own key (matches the nav-item's data-page and
@@ -57,6 +255,17 @@ function initShell(pageKey) {
       const allowed = PAGE_ROLES[item.dataset.page];
       if (allowed && !allowed.includes(me.role)) item.style.display = "none";
     });
+
+    // declarative gating for anything else on the page:
+    //   <div class="form-panel" data-requires-role="Admin,Staff">
+    // a passenger could previously see the "Add flight" / "Add airport" forms
+    // and the Edit/Delete buttons on every reference-data page. pressing them
+    // just produced a red 403 banner, which reads like the app is broken
+    // rather than like the button was never theirs to press
+    document.querySelectorAll("[data-requires-role]").forEach(el => {
+      const allowed = el.dataset.requiresRole.split(",").map(r => r.trim());
+      if (!allowed.includes(me.role)) el.remove();
+    });
   }
 
   document.querySelectorAll(".nav-item").forEach(item => {
@@ -69,6 +278,8 @@ function initShell(pageKey) {
       document.getElementById("sidebar").classList.toggle("collapsed");
     });
   }
+
+  wireMobileDrawer();
 
   const alertBox = document.getElementById("alert");
   if (alertBox) {
@@ -104,7 +315,7 @@ async function checkApiStatus() {
 // status, user role). optional confirm text since some of these are
 // destructive-ish
 async function patchStatus(path, body, reloadFns, confirmText) {
-  if (confirmText && !confirm(confirmText)) return;
+  if (confirmText && !await uiConfirm(confirmText, { title: "Please confirm" })) return;
   try {
     await api.patch(path, body);
     showAlert("Updated successfully", "success");
