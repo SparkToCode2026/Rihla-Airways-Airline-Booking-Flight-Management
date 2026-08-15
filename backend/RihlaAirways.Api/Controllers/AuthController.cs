@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -52,8 +53,12 @@ public class AuthController : ControllerBase
         string Role, DateTime ExpiresAt);
 
 
+    // 10/min per IP - looser than login on purpose. this defends against
+    // bulk-creating junk accounts, not against guessing a known password, and
+    // one person fixing a validation error a few times in a row is normal
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth-register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
@@ -80,8 +85,15 @@ public class AuthController : ControllerBase
     }
 
 
+    // 5 attempts per minute per IP. BCrypt already makes each guess expensive,
+    // but nothing stopped an attacker making unlimited guesses - and every
+    // seeded account in this project shares one password, so a working
+    // dictionary attack would open all of them at once.
+    // note this throttles by IP, not by email: limiting per-email would let
+    // someone lock a specific user out of their own account
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth-login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);

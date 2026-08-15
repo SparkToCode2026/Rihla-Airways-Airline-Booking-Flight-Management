@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using RihlaAirways.Api.Data;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using RihlaAirways.Api.Services;
@@ -103,13 +105,65 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// the frontend is a separate origin in week 2 (file:// or live server),
-// so the browser blocks every fetch without this. wide open is fine for
-// local dev - we tighten it if this ever leaves our machines
+// the frontend is a separate origin (http://localhost:8080 when served by
+// `python3 -m http.server 8080` from /frontend), so the browser blocks every
+// fetch without this.
+//
+// this used to be AllowAnyOrigin(), which let ANY website a user happens to
+// be visiting call this API from their browser. it never leaked the token -
+// that lives in localStorage, which cross-origin script can't read - but it
+// did mean any page could fire requests that ride along with whatever the
+// browser sends. naming the origins costs nothing.
+//
+// the list is config-driven so a teammate on a different port doesn't have to
+// edit code - add to Cors:Origins in appsettings.Development.json
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? new[] { "http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:5500" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy.WithOrigins(corsOrigins).AllowAnyMethod().AllowAnyHeader());
+});
+
+
+// ---- rate limiting ----
+// BCrypt makes each password guess slow, but nothing stopped an attacker
+// making unlimited guesses. that matters more here than usual because the
+// seeded accounts share one password.
+//
+// a FIXED window rather than a sliding one on purpose: it's the cheapest to
+// reason about, and "5 tries a minute from this IP" is easy to explain and to
+// demo. partitioned by remote IP so one attacker can't lock out everyone else.
+// 429 rather than the default 503 - it's the status that actually means
+// "you're going too fast"
+// two SEPARATE policies rather than one shared "auth" budget. they defend
+// against different things:
+//   login    - guessing the password of a known account. tight, because a
+//              legitimate human does not need 6 attempts a minute
+//   register - bulk-creating junk accounts. looser, because one person
+//              legitimately correcting a validation error several times in a
+//              row is normal, and several people behind one office NAT share
+//              this IP
+// they were briefly one policy, and the consequence showed up immediately:
+// the test suite's own registrations ate the login budget and everything
+// after them 429'd
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    static Func<HttpContext, RateLimitPartition<string>> PerIp(int permits, int seconds) =>
+        httpContext => RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permits,
+                Window = TimeSpan.FromSeconds(seconds),
+                QueueLimit = 0            // reject immediately, don't queue
+            });
+
+    options.AddPolicy("auth-login", PerIp(permits: 5, seconds: 60));
+    options.AddPolicy("auth-register", PerIp(permits: 10, seconds: 60));
 });
 
 
@@ -142,7 +196,33 @@ if (app.Environment.IsDevelopment())
 // if we ever deploy anywhere real
 // app.UseHttpsRedirection();
 
+// ---- security headers ----
+// three cheap ones that can't break anything.
+//
+// deliberately NO Content-Security-Policy: the frontend has ~94 inline
+// onclick/onchange handlers, and any useful CSP (script-src 'self') blocks
+// every one of them - the pages would render and then do nothing when
+// clicked. adding CSP means converting those to addEventListener first.
+// XSS is already covered by escapeHtml() at ~99 call sites in the frontend
+app.Use(async (context, next) =>
+{
+    var h = context.Response.Headers;
+    // stop the browser guessing a response is HTML/JS when we said it's JSON,
+    // which is how a JSON endpoint gets turned into a script include
+    h["X-Content-Type-Options"] = "nosniff";
+    // this API has no UI of its own, so nothing should ever frame it
+    h["X-Frame-Options"] = "DENY";
+    // don't leak the full URL (which can carry ids) to third parties
+    h["Referrer-Policy"] = "no-referrer";
+    await next();
+});
+
 app.UseCors("AllowFrontend");
+
+// before authentication: a request that's being throttled shouldn't cost us
+// a token validation, and brute-force protection has to apply to anonymous
+// callers too
+app.UseRateLimiter();
 
 // ORDER MATTERS, and this is the classic bug. authentication BEFORE
 // authorization: authenticate = read the token, build User.Claims.
