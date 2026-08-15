@@ -342,8 +342,13 @@ public class PaymentsController : ControllerBase
 
 
     // ============ 8. GET sort/aggregate ============
+    // Admin-only was inconsistent with the rest of this controller - GetAll,
+    // Filter, Update and the status PATCH are all Admin,Staff (finance/ops
+    // staff need to see payment activity, not just admins). that mismatch is
+    // what made this "request failed" for a Staff account while everything
+    // else on the Payments page worked. matching the rest of the controller.
     [HttpGet("stats")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> GetStats()
     {
         // these OrderBys are fine after the Select - anonymous types keep

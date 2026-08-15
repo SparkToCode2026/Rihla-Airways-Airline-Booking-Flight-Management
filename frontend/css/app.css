@@ -156,6 +156,16 @@ button, input, select{font-family:inherit;}
 }
 .btn-outline-red:hover{ background: var(--red-bg); }
 
+/* a "fake button" - same footprint as .btn-outline so the actions column
+   doesn't jump around row to row, but flat and unstyled enough that it
+   doesn't invite a click that's just going to fail. used for "Change
+   seat" once a flight has departed/landed/cancelled */
+.btn-outline.is-fake, .btn-outline:disabled{
+  background:transparent; border-color:transparent; color:var(--text-faint);
+  cursor:default; font-weight:600;
+}
+.btn-outline.is-fake:hover, .btn-outline:disabled:hover{ background:transparent; }
+
 /* ---------- Form Panels ---------- */
 .form-panel{
   background: var(--panel-2);
@@ -179,8 +189,13 @@ button, input, select{font-family:inherit;}
 .form-control:focus{ border-color: var(--accent); outline: none; }
 
 /* ---------- Stat cards ---------- */
+/* auto-fit + minmax instead of a fixed repeat(4, 1fr): role-based cards
+   (Registered Airplanes, System Users) get display:none for roles that
+   can't see them, and a fixed 4-column track left empty grid cells on the
+   right for those roles. auto-fit collapses to however many cards are
+   actually rendered and stretches them to fill the row instead */
 .stat-grid{
-  display:grid; grid-template-columns: repeat(4, 1fr); gap:18px; margin-bottom:22px;
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:18px; margin-bottom:22px;
 }
 .card{
   background: var(--panel); border:1px solid var(--border-soft);
@@ -195,7 +210,11 @@ button, input, select{font-family:inherit;}
 .stat-foot{ color: var(--text-faint); font-size:12.5px; margin-top:8px; }
 
 /* ---------- Two column ---------- */
-.two-col{ display:grid; grid-template-columns: 1.6fr 1fr; gap:18px; align-items:start; }
+/* align-items:stretch (not start) - widgetPrimary (next trip / today's
+   flying) is often much shorter than its sibling attention list, and
+   align-items:start left it floating at the top of a tall empty card.
+   stretching both to the row's tallest card removes that dead space */
+.two-col{ display:grid; grid-template-columns: 1.6fr 1fr; gap:18px; align-items:stretch; }
 .panel-head{ display:flex; align-items:center; justify-content:space-between; padding: 18px 20px 14px; }
 .panel-head h3{ margin:0; font-size:15.5px; font-weight:700; }
 .view-all{ color: var(--accent); font-size:12.5px; font-weight:600; cursor:pointer; }
@@ -302,7 +321,10 @@ details.tool-block .tool-body{ padding: 4px 18px 18px; }
 .stat-section th, .stat-section td{ padding:8px 12px; font-size:12.5px; }
 
 @media (max-width: 1100px){
-  .stat-grid{ grid-template-columns: repeat(2,1fr); }
+  /* .stat-grid is intentionally left alone here - it's auto-fit/minmax now,
+     so it already wraps to however many columns fit instead of needing a
+     fixed override, and that keeps working no matter how many role-based
+     cards are hidden */
   .two-col{ grid-template-columns: 1fr; }
   .cards-grid{ grid-template-columns: repeat(2,1fr); }
 }

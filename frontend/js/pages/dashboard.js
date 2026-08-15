@@ -47,14 +47,28 @@ async function loadDashboard() {
   try {
     const me = auth.getUser() || {};
     const isStaff = me.role === "Admin" || me.role === "Staff";
+    // GET /users is Admin-only (UsersController.GetAll). a Staff or
+    // Passenger account can never see this card no matter what, so don't
+    // even request it - just drop the card from the grid instead of
+    // showing a permanently dimmed "not available for your role" tile
+    const isAdmin = me.role === "Admin";
+    const usersCard = document.getElementById("cardUsers");
+    if (usersCard) usersCard.style.display = isAdmin ? "" : "none";
+
+    // GET /airplanes is Admin,Staff (AirplanesController.GetAll) - a
+    // Passenger can never see this card either, same reasoning as Users
+    // above. drop it from the grid instead of showing a permanently
+    // dimmed "not available for your role" tile
+    const airplanesCard = document.getElementById("cardAirplanes");
+    if (airplanesCard) airplanesCard.style.display = isStaff ? "" : "none";
 
     // /flights is paginated - { total, page, pageSize, items } - not a bare
     // array like every other list endpoint. unwrap it here
     const [flightsRes, bookingsRes, airplanesRes, usersRes] = await Promise.all([
       tryGet("/flights?pageSize=200", { total: 0, items: [] }),
       tryGet("/bookings", []),
-      tryGet("/airplanes", []),
-      tryGet("/users", [])
+      isStaff ? tryGet("/airplanes", []) : Promise.resolve({ ok: false, forbidden: true, data: [] }),
+      isAdmin ? tryGet("/users", []) : Promise.resolve({ ok: false, forbidden: true, data: [] })
     ]);
 
     const flightsPage = flightsRes.data;
@@ -65,10 +79,14 @@ async function loadDashboard() {
     // /bookings scopes to the caller, so the label has to follow the role
     setStat("statBookings", null, "statBookingsFoot", bookingsRes, bookings.length,
             isStaff ? "system-wide" : "your bookings");
-    setStat("statAirplanes", "cardAirplanes", "statAirplanesFoot", airplanesRes,
-            airplanesRes.data.length, "fleet count");
-    setStat("statUsers", "cardUsers", "statUsersFoot", usersRes,
-            usersRes.data.length, "accounts active");
+    if (isStaff) {
+      setStat("statAirplanes", "cardAirplanes", "statAirplanesFoot", airplanesRes,
+              airplanesRes.data.length, "fleet count");
+    }
+    if (isAdmin) {
+      setStat("statUsers", "cardUsers", "statUsersFoot", usersRes,
+              usersRes.data.length, "accounts active");
+    }
 
     // the two widgets are role-shaped: a passenger cares about their own next
     // trip and what still needs paying; ops cares about today's flying and
@@ -113,7 +131,7 @@ async function loadDashboard() {
 
 async function renderWidgets({ isStaff, flights, bookings }) {
   if (isStaff) {
-    renderOpsToday(flights);
+    renderOpsToday(flights, bookings);
     renderOpsAttention(flights, bookings);
   } else {
     await renderNextTrip();
@@ -197,10 +215,16 @@ function renderPassengerAttention(bookings) {
 
 
 // ---------- staff: today's operation ----------
-function renderOpsToday(flights) {
+// the passenger hero card packs three facts into one glance (route, seat,
+// countdown) - the old version of this card had exactly one (a count), so
+// next to that it read as empty even when it was technically correct.
+// this adds the same at-a-glance breadth: fleet-wide totals alongside
+// today's number, not just today's number alone
+function renderOpsToday(flights, bookings) {
   const box = document.getElementById("widgetPrimary");
   const today = new Date().toDateString();
   const todays = flights.filter(f => new Date(f.departureTime).toDateString() === today);
+  const bookingsToday = bookings.filter(b => new Date(b.bookingDate).toDateString() === today).length;
 
   // a status breakdown is more use to ops than a single count - it says
   // where the day's problems are
@@ -209,19 +233,31 @@ function renderOpsToday(flights) {
   todays.forEach(f => { counts[f.status] = (counts[f.status] || 0) + 1; });
   const max = Math.max(1, ...Object.values(counts));
 
+  const disrupted = (counts["Delayed"] || 0) + (counts["Cancelled"] || 0);
+  const onSchedulePct = todays.length ? Math.round(((todays.length - disrupted) / todays.length) * 100) : 100;
+
   box.innerHTML = `
-    <div class="panel-head" style="padding:0 0 10px;"><h3>Today's flying</h3></div>
-    <div class="stat-value-row"><span class="stat-value">${todays.length}</span></div>
-    <div class="stat-foot">departures scheduled today</div>
-    <div class="mini-bars" style="padding-left:0;padding-right:0;margin-top:12px;">
-      ${order.filter(s => counts[s]).map(s => `
-        <div class="mini-bar-row">
-          <span class="mini-bar-label">${s}</span>
-          <span class="mini-bar-track">
-            <span class="mini-bar-fill" style="width:${(counts[s] / max) * 100}%"></span>
-          </span>
-          <span class="mini-bar-value">${counts[s]}</span>
-        </div>`).join("") || `<div class="cell-dim">No departures today.</div>`}
+    <div class="ops-today">
+      <div class="stat-label">Today's flying</div>
+      <div class="stat-value-row"><span class="stat-value">${todays.length}</span></div>
+      <span class="ops-today-count">departures scheduled today</span>
+
+      <div class="ops-mini-stats">
+        <div class="ops-mini-stat"><span class="ops-mini-value">${flights.length}</span><span class="ops-mini-label">Total flights</span></div>
+        <div class="ops-mini-stat"><span class="ops-mini-value">${bookingsToday}</span><span class="ops-mini-label">Bookings today</span></div>
+        <div class="ops-mini-stat"><span class="ops-mini-value">${onSchedulePct}%</span><span class="ops-mini-label">On schedule</span></div>
+      </div>
+
+      <div class="mini-bars">
+        ${order.filter(s => counts[s]).map(s => `
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">${s}</span>
+            <span class="mini-bar-track">
+              <span class="mini-bar-fill" style="width:${(counts[s] / max) * 100}%"></span>
+            </span>
+            <span class="mini-bar-value">${counts[s]}</span>
+          </div>`).join("") || `<div class="cell-dim">No departures today.</div>`}
+      </div>
     </div>`;
 }
 

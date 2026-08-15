@@ -54,6 +54,43 @@ async function refreshFlowBar() {
 }
 
 
+// the SAME array the Cabin dropdown is built from - handed to
+// renderSeatMap so the map's class zones and the dropdown's options can
+// never drift out of sync (see seatmap.js's computeZones)
+let seatClassOptions = [];
+
+// current value of the Cabin dropdown, as a number - null while it's
+// still empty/unloaded, since "" would otherwise coerce to 0 and match
+// a real seat class id
+function activeSeatClassId() {
+  const v = document.getElementById("ticketSeatClassId")?.value;
+  return v ? parseInt(v) : null;
+}
+
+// the Cabin dropdown always lists every configured class, but not every
+// FLIGHT has every class - a small aircraft doesn't get a First zone (see
+// computeZones' rarity rule in seatmap.js). called with whatever
+// renderSeatMap just actually drew, this limits the dropdown to classes
+// that exist on THIS flight, so picking one always has seats to click -
+// same fix in spirit as tying the map to the dropdown in the first place
+function syncCabinDropdown(zones) {
+  const classSel = document.getElementById("ticketSeatClassId");
+  if (!classSel || !zones) return;
+
+  const prevValue = classSel.value;
+  const available = seatClassOptions.filter(c => zones.some(z => String(z.id) === String(c.id)));
+  const list = available.length ? available : seatClassOptions; // never leave the dropdown empty
+
+  classSel.innerHTML = list
+    .map(c => `<option value="${c.id}">${escapeHtml(c.name)} · ×${c.priceMultiplier} fare · ` +
+              `${c.baggageAllowanceKg}kg bags</option>`).join("");
+
+  if (list.some(c => String(c.id) === prevValue)) classSel.value = prevValue;
+
+  // whatever the dropdown landed on, the just-rendered map needs to match
+  setActiveSeatClass("seatMap", activeSeatClassId());
+}
+
 // fills the three pickers from the API. the form used to be raw FK number
 // boxes defaulting to 1/1/1 - a passenger can't know their booking's numeric
 // id, and flight 1 is a landed flight, so the defaults were guaranteed to fail
@@ -77,6 +114,27 @@ async function loadPickers() {
     if (wanted && open.some(b => String(b.id) === wanted)) sel.value = wanted;
   } catch (err) { if (err.status !== 403) showAlert(err.message); }
 
+  // seat classes BEFORE flights - the seat map render below needs this
+  // list already in hand so its zones match the Cabin dropdown from the
+  // very first draw, not just after the user touches it
+  try {
+    seatClassOptions = await api.get("/seatclasses");
+    const classSel = document.getElementById("ticketSeatClassId");
+    classSel.innerHTML = seatClassOptions
+      .map(c => `<option value="${c.id}">${escapeHtml(c.name)} · ×${c.priceMultiplier} fare · ` +
+                `${c.baggageAllowanceKg}kg bags</option>`).join("");
+
+    // switching Cabin re-filters which seats are pickable on the map
+    // that's already drawn - it does NOT re-fetch the flight's occupied
+    // seats, just disables anything outside the newly chosen class
+    if (!classSel.dataset.bound) {
+      classSel.addEventListener("change", () => {
+        setActiveSeatClass("seatMap", activeSeatClassId());
+      });
+      classSel.dataset.bound = "1";
+    }
+  } catch (err) { showAlert(err.message); }
+
   // future flights only - you can't sell a seat on something that already went
   try {
     const page = await api.get("/flights?pageSize=200");
@@ -91,20 +149,15 @@ async function loadPickers() {
     // whenever the flight changes - a 162-seat 737 and an 88-seat Embraer
     // don't have the same rows, let alone the same seats sold
     if (!flightSel.dataset.bound) {
-      flightSel.addEventListener("change", () => {
+      flightSel.addEventListener("change", async () => {
         document.getElementById("seatNumber").value = "";
-        renderSeatMap("seatMap", "seatNumber", flightSel.value);
+        const zones = await renderSeatMap("seatMap", "seatNumber", flightSel.value, null, seatClassOptions, activeSeatClassId());
+        syncCabinDropdown(zones);
       });
       flightSel.dataset.bound = "1";
     }
-    renderSeatMap("seatMap", "seatNumber", flightSel.value);
-  } catch (err) { showAlert(err.message); }
-
-  try {
-    const classes = await api.get("/seatclasses");
-    document.getElementById("ticketSeatClassId").innerHTML = classes
-      .map(c => `<option value="${c.id}">${escapeHtml(c.name)} · ×${c.priceMultiplier} fare · ` +
-                `${c.baggageAllowanceKg}kg bags</option>`).join("");
+    const zones = await renderSeatMap("seatMap", "seatNumber", flightSel.value, null, seatClassOptions, activeSeatClassId());
+    syncCabinDropdown(zones);
   } catch (err) { showAlert(err.message); }
 
   // default the traveller to the signed-in user - the common case is booking
@@ -133,6 +186,11 @@ function renderTicketsTable(data) {
 }
 
 
+// flight statuses PATCH /tickets/{id}/seat itself refuses (TicketsController.
+// UpdateSeat) - kept as one list so the button and the API never disagree
+// about what's changeable
+const SEAT_LOCKED_STATUSES = ["Departed", "Landed", "Cancelled"];
+
 // staff edit and remove tickets; a passenger only picks their seat.
 // mirrors the API exactly - PUT and DELETE on /tickets are Admin,Staff, while
 // PATCH /tickets/{id}/seat stays self-service. changing the passenger name or
@@ -142,6 +200,16 @@ function ticketActions(t) {
     return `<button class="btn-outline" onclick="editTicket(${t.id})">Edit</button>
             <button class="btn-outline-red" onclick="deleteTicket(${t.id})">Delete</button>`;
   }
+
+  // the flight itself refuses this once it's departed/landed/cancelled -
+  // showing a live-looking button that always ends in a 409 reads as a
+  // bug, not as a rule. a disabled, textual stand-in with the reason is
+  // the honest version of the same button
+  if (SEAT_LOCKED_STATUSES.includes(t.flightStatus)) {
+    const reason = t.flightStatus === "Cancelled" ? "Flight cancelled" : `Already ${t.flightStatus.toLowerCase()}`;
+    return `<button class="btn-outline is-fake" disabled title="${escapeHtml(reason)} — seats can no longer be changed.">${escapeHtml(reason)}</button>`;
+  }
+
   return `<button class="btn-outline" onclick="changeSeat(${t.id})">Change seat</button>`;
 }
 
@@ -153,16 +221,25 @@ async function changeSeat(id) {
   const t = ticketRows.find(r => r.id === id);
   if (!t) return;
 
+  // changing seat does NOT change class - PATCH /tickets/{id}/seat only
+  // ever touches SeatNumber - so the map is locked to whichever class this
+  // ticket already holds (t.seatClassId). that's the fix for "if he chose
+  // an Economy seat, it should say Economy": the modal shows the ticket's
+  // REAL class, not a heuristic guess, and every seat outside that class's
+  // zone is disabled - there's nowhere else to click
   const picked = await uiDialog({
     title: `Change seat · ${t.flightNumber}`,
-    message: `${t.originCode} → ${t.destinationCode}. Currently in ${t.seatNumber}.`,
+    message: `${t.originCode} → ${t.destinationCode}. ${t.seatClassName} · currently in ${t.seatNumber}.`,
     confirmLabel: "Save seat",
     body: `<input type="hidden" id="seatModalValue" value="${escapeHtml(t.seatNumber)}">
            <div class="seatmap" id="seatModalMap"></div>`,
     // drawn once the modal markup exists, since it has to fetch the flight's
     // occupied seats first
-    onOpen: () => renderSeatMap("seatModalMap", "seatModalValue", t.flightId, t.seatNumber),
-    resolveValue: () => document.getElementById("seatModalValue").value
+    onOpen: () => renderSeatMap("seatModalMap", "seatModalValue", t.flightId, t.seatNumber, seatClassOptions, t.seatClassId),
+    resolveValue: () => document.getElementById("seatModalValue").value,
+    // the seat map needs real room to be usable - a 420px centered box
+    // was too cramped for a full cabin grid, so this opens near-fullscreen
+    fullPage: true
   });
 
   if (!picked || picked === t.seatNumber) return;

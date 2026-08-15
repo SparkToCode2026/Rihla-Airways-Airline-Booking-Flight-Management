@@ -133,7 +133,11 @@
         </table>
       </div>
 
-      <details class="tool-block">
+      <!-- TicketsController.GetStats is [Authorize(Roles = "Admin,Staff")] -
+           the label already said Admin/Staff only but the block was still
+           visible and clickable for a passenger, who got a 403 ("request
+           failed"). hide the whole block for a role that can never use it -->
+      <details class="tool-block" data-requires-role="Admin,Staff">
         <summary>Stats — revenue by flight <span class="cell-dim">(Admin/Staff only)</span></summary>
         <div class="tool-body">
           <button type="button" class="btn-outline" onclick="loadStats('/tickets/stats','ticketsStats')">Load stats</button>

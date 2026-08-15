@@ -55,18 +55,17 @@ function renderFlightsTable(data) {
       <td>${formatDate(f.departureTime)}</td>
       <td>${formatDate(f.arrivalTime)}</td>
       <td>${statusBadge(f.status)}</td>
+      ${canWrite() ? `
       <td>
         <div class="row-actions">
-          ${!canWrite() ? `<span class="cell-dim">—</span>` : `
           <button class="btn-outline" onclick="editFlight(${f.id})">Edit</button>
           <select class="select-inline" onchange="if(this.value){patchStatus('/flights/'+${f.id}+'/status',{status:this.value},[loadFlights]);this.value='';}">
             <option value="">Set status…</option>
             ${FLIGHT_STATUSES.filter(s => s !== f.status).map(s => `<option value="${s}">${s}</option>`).join("")}
           </select>
           ${isAdminUser() ? `<button class="btn-outline-red" onclick="deleteFlight(${f.id})">Delete</button>` : ``}
-          `}
         </div>
-      </td>
+      </td>` : ``}
     </tr>
   `).join("");
 }

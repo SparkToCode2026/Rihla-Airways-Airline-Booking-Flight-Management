@@ -104,13 +104,16 @@
 
       <div class="table-card">
         <table>
-          <thead><tr><th>ID</th><th>Origin</th><th>Destination</th><th>Distance</th><th>Duration</th><th>Actions</th></tr></thead>
+          <thead><tr><th>ID</th><th>Origin</th><th>Destination</th><th>Distance</th><th>Duration</th><th data-requires-role="Admin">Actions</th></tr></thead>
           <tbody id="routesTable"></tbody>
         </table>
         <div id="routesPager"></div>
       </div>
 
-      <details class="tool-block">
+      <!-- RoutesController.GetStats is [Authorize(Roles = "Admin,Staff")] -
+           a passenger clicking Load stats always got a 403 ("request
+           failed"). hide the whole block for a role that can never use it -->
+      <details class="tool-block" data-requires-role="Admin,Staff">
         <summary>Stats — network totals &amp; by origin airport</summary>
         <div class="tool-body">
           <button type="button" class="btn-outline" onclick="loadStats('/routes/stats','routesStats')">Load stats</button>

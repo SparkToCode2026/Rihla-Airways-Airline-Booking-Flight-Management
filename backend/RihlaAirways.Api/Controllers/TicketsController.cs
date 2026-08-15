@@ -42,9 +42,14 @@ public class TicketsController : ControllerBase
     // Booking along, and Booking carries a User, and User carries
     // PasswordHash - so an anonymous ticket lookup would leak password
     // hashes. it also loops forever in the json serializer
+    // FlightStatus is here so the UI can grey out "Change seat" up front
+    // instead of only finding out from the 409 that UpdateSeat below
+    // already throws for Departed/Landed/Cancelled - same status string,
+    // just surfaced before the click instead of after it
     public record TicketResponseDto(
         int Id, int BookingId, int FlightId, string FlightNumber,
         DateTime DepartureTime, string OriginCode, string DestinationCode,
+        string FlightStatus,
         int SeatClassId, string SeatClassName, string SeatNumber,
         decimal Price, string PassengerName, int BaggageCount, decimal TotalBaggageFee);
 
@@ -97,6 +102,7 @@ public class TicketsController : ControllerBase
             t.Flight.FlightNumber, t.Flight.DepartureTime,
             t.Flight.Route.OriginAirport.Code,
             t.Flight.Route.DestinationAirport.Code,
+            t.Flight.Status,
             t.SeatClassId, t.SeatClass.Name, t.SeatNumber,
             t.Price, t.PassengerName,
             t.Baggages.Count,
