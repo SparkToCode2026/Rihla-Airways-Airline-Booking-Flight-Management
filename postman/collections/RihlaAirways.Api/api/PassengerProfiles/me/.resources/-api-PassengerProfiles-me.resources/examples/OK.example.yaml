@@ -1,0 +1,23 @@
+$kind: http-example
+name: OK
+request:
+  url: "{{baseUrl}}/api/PassengerProfiles/me"
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: json
+    content: |-
+      {
+        "id": 1,
+        "userId": 2,
+        "userName": "Nasser Al-Kindi",
+        "userEmail": "nasser@example.om",
+        "passportNumber": "OM1000555",
+        "nationality": "Omani",
+        "dateOfBirth": "1991-06-15",
+        "age": 35,
+        "phoneNumber": "+96891001123"
+      }
+order: 1000
