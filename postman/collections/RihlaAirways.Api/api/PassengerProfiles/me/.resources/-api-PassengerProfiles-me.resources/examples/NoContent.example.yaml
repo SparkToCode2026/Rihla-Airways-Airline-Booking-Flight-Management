@@ -1,0 +1,12 @@
+$kind: http-example
+name: No Content (no profile yet)
+request:
+  url: "{{baseUrl}}/api/PassengerProfiles/me"
+  method: GET
+response:
+  statusCode: 204
+  statusText: No Content
+  body:
+    type: text
+    content: ""
+order: 2000

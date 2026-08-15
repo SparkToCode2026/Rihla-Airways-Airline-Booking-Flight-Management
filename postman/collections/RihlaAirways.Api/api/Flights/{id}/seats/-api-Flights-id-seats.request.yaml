@@ -1,0 +1,9 @@
+$kind: http-request
+name: /api/Flights/:id/seats
+url: "{{baseUrl}}/api/Flights/:id/seats"
+method: GET
+pathVariables:
+  id: "12"
+settings: {}
+examples: ./.resources/-api-Flights-id-seats.resources/examples
+order: 1000
