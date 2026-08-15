@@ -221,7 +221,17 @@ public class SeatClassesController : ControllerBase
         // note this OrderBy is fine AFTER the Select, unlike ToDto above -
         // anonymous types (new { ... }) keep their property names visible
         // to EF Core, positional records don't
-        var stats = await _context.SeatClasses
+        //
+        // the request-failed bug: this used to compute AverageTicketPrice
+        // with a ternary INSIDE the query - `s.Tickets.Any() ? s.Tickets
+        // .Average(...) : 0m`. that's a per-row conditional average over a
+        // correlated navigation collection, and EF Core throws
+        // "could not be translated" at runtime trying to turn it into SQL -
+        // same trap the AirplanesController stats comment already warns
+        // about. fix follows that same pattern: pull the safe aggregates
+        // (Count/Sum are 0 on an empty set, no guard needed) out of the
+        // database, then do the division in memory after ToListAsync
+        var raw = await _context.SeatClasses
             .Select(s => new
             {
                 s.Id,
@@ -230,15 +240,25 @@ public class SeatClassesController : ControllerBase
                 s.BaggageAllowanceKg,
                 TicketsSold = s.Tickets.Count,
                 // aggregates over THIS class's tickets, not the whole table
-                TotalRevenue = s.Tickets.Sum(t => t.Price),
-                // the ternary guards against dividing by zero - Average()
-                // on an empty set throws, Sum() on an empty set is just 0
-                AverageTicketPrice = s.Tickets.Any()
-                    ? Math.Round(s.Tickets.Average(t => t.Price), 2)
+                TotalRevenue = s.Tickets.Sum(t => t.Price)
+            })
+            .ToListAsync();
+
+        var stats = raw
+            .Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.PriceMultiplier,
+                s.BaggageAllowanceKg,
+                s.TicketsSold,
+                s.TotalRevenue,
+                AverageTicketPrice = s.TicketsSold > 0
+                    ? Math.Round(s.TotalRevenue / s.TicketsSold, 2)
                     : 0m
             })
             .OrderByDescending(s => s.TotalRevenue)
-            .ToListAsync();
+            .ToList();
 
         return Ok(stats);
     }

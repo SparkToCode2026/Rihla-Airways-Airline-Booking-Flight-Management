@@ -53,9 +53,10 @@ function renderRoutesTable(data) {
       <td>${escapeHtml(r.destinationCode)} <span class="cell-dim">#${r.destinationAirportId}</span></td>
       <td>${r.distanceKm} km</td>
       <td>${r.estimatedDurationMin} mins</td>
+      ${canWrite() ? `
       <td>
-        ${canWrite() ? `<button class="btn-outline" onclick="editRoute(${r.id})">Edit</button><button class="btn-outline-red" onclick="deleteRoute(${r.id})">Delete</button>` : `<span class="cell-dim">—</span>`}
-      </td>
+        <button class="btn-outline" onclick="editRoute(${r.id})">Edit</button><button class="btn-outline-red" onclick="deleteRoute(${r.id})">Delete</button>
+      </td>` : ``}
     </tr>
   `).join("");
 }

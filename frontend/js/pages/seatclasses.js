@@ -37,9 +37,10 @@ function renderSeatClassesTable(data) {
       <td><b>${escapeHtml(sc.name)}</b></td>
       <td>x${sc.priceMultiplier}</td>
       <td>${sc.baggageAllowanceKg} kg</td>
+      ${canWrite() ? `
       <td>
-        ${canWrite() ? `<button class="btn-outline" onclick="editSeatClass(${sc.id})">Edit</button><button class="btn-outline-red" onclick="deleteSeatClass(${sc.id})">Delete</button>` : `<span class="cell-dim">—</span>`}
-      </td>
+        <button class="btn-outline" onclick="editSeatClass(${sc.id})">Edit</button><button class="btn-outline-red" onclick="deleteSeatClass(${sc.id})">Delete</button>
+      </td>` : ``}
     </tr>
   `).join("");
 }

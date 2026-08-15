@@ -38,12 +38,12 @@ function uiDialogHost() {
 // to fetch the flight's occupied seats before it can render anything
 function uiDialog({ title, message, body = "", confirmLabel = "Confirm",
                     cancelLabel = "Cancel", danger = false, resolveValue = null,
-                    onOpen = null }) {
+                    onOpen = null, fullPage = false }) {
   return new Promise(resolve => {
     const host = uiDialogHost();
     host.innerHTML = `
-      <div class="ui-overlay" id="uiOverlay">
-        <div class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
+      <div class="ui-overlay${fullPage ? " ui-overlay-full" : ""}" id="uiOverlay">
+        <div class="ui-modal${fullPage ? " ui-modal-full" : ""}" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
           <div class="ui-modal-head">
             <h3 id="uiModalTitle">${escapeHtml(title)}</h3>
           </div>
